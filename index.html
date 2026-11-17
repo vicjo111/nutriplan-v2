@@ -1,0 +1,1244 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/nocturne-fe4cc011-c814-4974-96ea-06dd36a46ab1/styles.css">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#161826">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<script src="_ds/nocturne-fe4cc011-c814-4974-96ea-06dd36a46ab1/_ds_bundle.js"></script>
+<style>
+html,body{height:100%;margin:0;overflow:hidden;overscroll-behavior:none}
+a{color:var(--color-accent)}a:hover{color:var(--color-accent-400)}
+@keyframes np-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes np-sheet{from{transform:translateY(100%)}to{transform:none}}
+@keyframes np-scan{0%{top:4%}50%{top:94%}100%{top:4%}}
+@keyframes np-pulse{0%,100%{opacity:.45}50%{opacity:1}}
+.np-scroll::-webkit-scrollbar{display:none}
+input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
+</style>
+</helmet>
+
+
+
+<div style="position:relative;height:100dvh;width:100%;display:flex;flex-direction:column;background:var(--color-bg);color:var(--color-text);font-family:var(--font-body);font-variant-numeric:tabular-nums;overflow:hidden">
+
+<!-- ONBOARDING: bienvenida -->
+<sc-if value="{{ isWelcome }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top) + 72px) max(26px,calc(50% - 280px)) calc(env(safe-area-inset-bottom) + 28px);animation:np-in .45s ease both;background:radial-gradient(90% 50% at 0% 0%,var(--color-accent-900),transparent 70%)">
+  <div style="width:44px;height:2px;background:var(--color-accent);margin-bottom:22px"></div>
+  <h1 style="font-size:44px;margin:0 0 14px">Nutriplan</h1>
+  <p style="font-size:17px;line-height:1.45;color:var(--color-neutral-300);max-width:290px;margin:0;text-wrap:pretty">Tu plan de alimentación calculado a partir de tu cuerpo y tu objetivo.</p>
+  <div style="margin-top:44px;display:flex;flex-direction:column;gap:18px">
+    <div style="display:flex;gap:14px;align-items:flex-start"><i class="ph ph-camera" style="font-size:22px;color:var(--color-accent);margin-top:1px"></i><div><div style="font-size:15px;font-weight:500">Análisis físico por foto</div><div style="font-size:13px;color:var(--color-neutral-400)">Estimación inicial de grasa corporal</div></div></div>
+    <div style="display:flex;gap:14px;align-items:flex-start"><i class="ph ph-calculator" style="font-size:22px;color:var(--color-accent);margin-top:1px"></i><div><div style="font-size:15px;font-weight:500">Calorías y macros a medida</div><div style="font-size:13px;color:var(--color-neutral-400)">Calculados en tiempo real</div></div></div>
+    <div style="display:flex;gap:14px;align-items:flex-start"><i class="ph ph-scan" style="font-size:22px;color:var(--color-accent);margin-top:1px"></i><div><div style="font-size:15px;font-weight:500">Escáner de platos con IA</div><div style="font-size:13px;color:var(--color-neutral-400)">Registra una comida con una foto</div></div></div>
+  </div>
+  <div style="margin-top:auto">
+    <button class="btn btn-primary btn-block" style="height:50px;font-size:16px" onClick="{{ goPhoto }}">Comenzar <i class="ph ph-arrow-right"></i></button>
+  </div>
+</div>
+</sc-if>
+
+<!-- ONBOARDING: foto -->
+<sc-if value="{{ isPhoto }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top) + 28px) max(22px,calc(50% - 280px)) calc(env(safe-area-inset-bottom) + 24px);animation:np-in .4s ease both">
+  <div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent)">Paso 1 de 2</div>
+  <h3 style="margin:8px 0 8px">Sube una foto de tu estado físico actual</h3>
+  <p style="font-size:14px;color:var(--color-neutral-400);margin:0 0 18px;text-wrap:pretty">De frente, con buena luz y torso visible. La usamos para estimar tu grasa corporal inicial.</p>
+  <div style="position:relative;flex:1;border-radius:var(--radius-lg);background:var(--color-surface);box-shadow:var(--shadow-sm);overflow:hidden;display:flex;align-items:center;justify-content:center">
+    <sc-if value="{{ hasBodyPhoto }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;inset:0;background:center/cover no-repeat;background-image:url({{ bodyPhoto }})"></div></sc-if>
+    <sc-if value="{{ noBodyPhoto }}" hint-placeholder-val="{{ true }}">
+      <div style="text-align:center;color:var(--color-neutral-500)"><i class="ph ph-person-arms-spread" style="font-size:64px"></i><div style="font-size:13px;margin-top:6px">Sin foto todavía</div></div>
+    </sc-if>
+    <sc-if value="{{ bodyScanning }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;inset:0;background:color-mix(in srgb,var(--color-bg) 55%,transparent)">{{ scanLine }}
+        <div style="position:absolute;left:0;right:0;bottom:18px;text-align:center;font-size:14px;color:var(--color-accent-300)">Analizando composición corporal…</div></div>
+    </sc-if>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px">
+    <label class="btn btn-secondary" style="height:48px"><i class="ph ph-camera"></i>Tomar foto<input type="file" accept="image/*" capture="environment" style="display:none" onChange="{{ onBodyFile }}"></label>
+    <label class="btn btn-secondary" style="height:48px"><i class="ph ph-image"></i>Galería<input type="file" accept="image/*" style="display:none" onChange="{{ onBodyFile }}"></label>
+  </div>
+  <button class="btn btn-primary btn-block" style="height:50px;font-size:16px;margin-top:10px" disabled="{{ cantAnalyze }}" onClick="{{ analyzeBody }}">Analizar foto</button>
+  <button class="btn btn-ghost btn-block" style="height:44px;margin-top:2px" onClick="{{ skipPhoto }}">Omitir por ahora</button>
+</div>
+</sc-if>
+
+<!-- ONBOARDING: resultado -->
+<sc-if value="{{ isAnalysis }}" hint-placeholder-val="{{ false }}">
+<div class="np-scroll" style="flex:1;overflow:auto;display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top) + 28px) max(22px,calc(50% - 280px)) calc(env(safe-area-inset-bottom) + 24px);animation:np-in .4s ease both">
+  <div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent)">Análisis físico inicial</div>
+  <div style="display:flex;gap:16px;align-items:center;margin:14px 0 18px">
+    <div style="width:84px;height:112px;flex:none;border-radius:var(--radius-md);box-shadow:var(--shadow-sm);background:var(--color-surface) center/cover no-repeat;background-image:url({{ bodyPhoto }})"></div>
+    <div><div style="font-size:13px;color:var(--color-neutral-400)">Grasa corporal estimada</div>
+      <div style="font-size:46px;font-weight:500;letter-spacing:-.02em;line-height:1.1">15–17<span style="font-size:22px;color:var(--color-neutral-400)"> %</span></div>
+      <span class="tag tag-neutral">Estimación simulada</span></div>
+  </div>
+  <div class="card" style="padding:16px;gap:14px">
+    <div class="card-kicker">Enfoque sugerido</div>
+    <div style="display:flex;gap:12px"><i class="ph ph-trend-up" style="font-size:20px;color:var(--color-accent)"></i><div><div style="font-size:14px;font-weight:500">Superávit limpio moderado</div><div style="font-size:13px;color:var(--color-neutral-400)">+250 a +350 kcal sobre mantenimiento para ganar músculo con poca grasa.</div></div></div>
+    <div style="display:flex;gap:12px"><i class="ph ph-chart-pie-slice" style="font-size:20px;color:var(--color-accent)"></i><div><div style="font-size:14px;font-weight:500">Distribución de macros</div><div style="font-size:13px;color:var(--color-neutral-400)">Proteína 2 g/kg, grasas 0,9 g/kg y el resto en carbohidratos.</div></div></div>
+    <div style="display:flex;gap:12px"><i class="ph ph-eye" style="font-size:20px;color:var(--color-accent)"></i><div><div style="font-size:14px;font-weight:500">Puntos a cuidar</div><div style="font-size:13px;color:var(--color-neutral-400)">Si la cintura sube más de 1 cm al mes, reduce el superávit.</div></div></div>
+  </div>
+  <div style="margin-top:auto;padding-top:18px">
+    <button class="btn btn-primary btn-block" style="height:50px;font-size:16px" onClick="{{ finishOnboarding }}">Configurar mi perfil <i class="ph ph-arrow-right"></i></button>
+  </div>
+</div>
+</sc-if>
+
+<!-- APP -->
+<sc-if value="{{ isApp }}" hint-placeholder-val="{{ true }}">
+<div class="np-scroll" style="flex:1;overflow:auto;padding:calc(env(safe-area-inset-top) + 18px) max(18px,calc(50% - 300px)) 20px">
+
+<!-- Inicio -->
+<sc-if value="{{ tabHome }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;flex-direction:column;gap:12px;animation:np-in .3s ease both">
+  <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:4px">
+    <div><div style="font-size:12px;color:var(--color-neutral-400)">{{ today }}</div><h3 style="margin:2px 0 0">Resumen diario</h3></div>
+    <button class="btn btn-secondary btn-icon" style="width:44px;height:44px;border-radius:50%" onClick="{{ openProfile }}" aria-label="Perfil"><i class="ph ph-user" style="font-size:20px"></i></button>
+  </div>
+  <div class="card" style="padding:16px;flex-direction:row;align-items:center;gap:18px">
+    <div style="position:relative;width:128px;height:128px;flex:none">
+      <svg viewBox="0 0 128 128" width="128" height="128" style="transform:rotate(-90deg)">
+        <circle cx="64" cy="64" r="54" fill="none" stroke="var(--color-neutral-800)" stroke-width="9"></circle>
+        <circle cx="64" cy="64" r="54" fill="none" stroke="var(--color-accent)" stroke-width="9" stroke-linecap="round" stroke-dasharray="339.3" stroke-dashoffset="{{ ringOffset }}" style="transition:stroke-dashoffset .6s ease;filter:drop-shadow(0 0 6px var(--color-accent-700))"></circle>
+      </svg>
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+        <div style="font-size:28px;font-weight:500;line-height:1">{{ kcalLeft }}</div>
+        <div style="font-size:11px;color:var(--color-neutral-400);margin-top:3px">{{ kcalLeftLabel }}</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;min-width:0">
+      <div><div style="font-size:11px;color:var(--color-neutral-400)">Consumido</div><div style="font-size:19px;font-weight:500">{{ eaten.kcal }} <span style="font-size:12px;color:var(--color-neutral-400)">kcal</span></div></div>
+      <div><div style="font-size:11px;color:var(--color-neutral-400)">Objetivo</div><div style="font-size:19px;font-weight:500">{{ target.kcal }} <span style="font-size:12px;color:var(--color-neutral-400)">kcal</span></div></div>
+      <span class="tag tag-accent" style="align-self:flex-start">{{ goalLabel }}</span>
+    </div>
+  </div>
+  <div class="card" style="padding:16px;gap:14px">
+    <sc-for list="{{ macroBars }}" as="m" hint-placeholder-count="3">
+      <div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px"><span>{{ m.name }}</span><span style="color:var(--color-neutral-400)"><span style="color:var(--color-text)">{{ m.eaten }}</span> / {{ m.target }} g</span></div>
+        <div style="height:6px;border-radius:3px;background:var(--color-neutral-800);overflow:hidden"><div style="height:100%;border-radius:3px;width:{{ m.pct }};background:{{ m.color }};transition:width .5s ease"></div></div>
+      </div>
+    </sc-for>
+  </div>
+  <div class="card" style="padding:16px;gap:12px">
+    <div style="display:flex;justify-content:space-between;align-items:baseline">
+      <div style="display:flex;gap:8px;align-items:center;font-size:14px;font-weight:500"><i class="ph ph-drop" style="font-size:18px;color:var(--color-accent)"></i>Agua</div>
+      <div style="font-size:13px;color:var(--color-neutral-400)"><span style="color:var(--color-text)">{{ waterMl }}</span> / {{ waterGoal }} ml</div>
+    </div>
+    <div style="height:6px;border-radius:3px;background:var(--color-neutral-800);overflow:hidden"><div style="height:100%;width:{{ waterPct }};background:var(--color-accent-300);border-radius:3px;transition:width .4s ease"></div></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-secondary" style="height:44px;width:52px" onClick="{{ waterMinus }}" aria-label="Quitar vaso"><i class="ph ph-minus"></i></button>
+      <button class="btn btn-primary" style="height:44px;flex:1" onClick="{{ waterPlus }}"><i class="ph ph-plus"></i>{{ glassLabel }}</button>
+    </div>
+  </div>
+  <sc-if value="{{ trainedToday }}" hint-placeholder-val="{{ false }}">
+    <div class="card" style="padding:14px 16px;flex-direction:row;align-items:center;gap:12px;cursor:pointer" onClick="{{ goTrain }}">
+      <i class="ph ph-barbell" style="font-size:22px;color:var(--color-accent)"></i>
+      <div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:500">Entreno de hoy · {{ trainTon }}</div><div style="font-size:12px;color:var(--color-accent-300)">{{ trainAdj }}</div></div>
+      <i class="ph ph-caret-right" style="color:var(--color-neutral-500)"></i>
+    </div>
+  </sc-if>
+  <div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--color-neutral-400);margin:8px 0 0">Comidas de hoy</div>
+  <div class="card" style="padding:4px 16px;gap:0">
+    <sc-for list="{{ meals }}" as="meal" hint-placeholder-count="4">
+      <button onClick="{{ meal.open }}" style="all:unset;cursor:pointer;display:flex;align-items:center;gap:12px;min-height:56px;box-sizing:border-box" style-active="opacity:.6">
+        <i class="ph {{ meal.icon }}" style="font-size:20px;color:var(--color-accent)"></i>
+        <div style="flex:1;min-width:0"><div style="font-size:15px">{{ meal.name }}</div><div style="font-size:12px;color:var(--color-neutral-400)">{{ meal.status }}</div></div>
+        <div style="font-size:13px;color:var(--color-neutral-300)">{{ meal.kcalEaten }} / {{ meal.kcalPlan }}</div>
+        <i class="ph ph-caret-right" style="color:var(--color-neutral-500)"></i>
+      </button>
+    </sc-for>
+  </div>
+</div>
+</sc-if>
+
+<!-- Dieta -->
+<sc-if value="{{ tabDiet }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:12px;animation:np-in .3s ease both">
+  <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:4px">
+    <div><div style="font-size:12px;color:var(--color-neutral-400)">Plan generado · {{ target.kcal }} kcal</div><h3 style="margin:2px 0 0">Diario de alimentos</h3></div>
+    <button class="btn btn-secondary btn-icon" style="width:44px;height:44px" onClick="{{ openProfile }}" aria-label="Ajustar perfil"><i class="ph ph-sliders-horizontal" style="font-size:20px"></i></button>
+  </div>
+  <sc-for list="{{ meals }}" as="meal" hint-placeholder-count="4">
+    <div class="card" style="padding:14px 16px 6px;gap:4px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline"><div class="card-title">{{ meal.name }}</div><div style="font-size:12px;color:var(--color-neutral-400)">{{ meal.kcalEaten }} / {{ meal.kcalPlan }} kcal</div></div>
+      <sc-for list="{{ meal.items }}" as="it" hint-placeholder-count="3">
+        <div style="display:flex;align-items:center;gap:10px;min-height:54px">
+          <button onClick="{{ it.toggle }}" aria-label="Registrar" style="all:unset;cursor:pointer;width:44px;height:44px;margin-left:-10px;display:flex;align-items:center;justify-content:center;flex:none">
+            <span style="width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:1.5px solid {{ it.ringColor }};background:{{ it.fill }};color:var(--color-bg);font-size:13px"><i class="ph ph-check" style="opacity:{{ it.checkOpacity }}"></i></span>
+          </button>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ it.name }} <span style="color:var(--color-neutral-500)">{{ it.qty }}</span></div>
+            <div style="font-size:12px;color:var(--color-neutral-400)">{{ it.kcal }} kcal · {{ it.p }}P · {{ it.c }}C · {{ it.g }}G</div>
+          </div>
+          <sc-if value="{{ it.canSwap }}" hint-placeholder-val="{{ true }}">
+            <button class="btn btn-ghost btn-icon" style="width:44px;height:44px" onClick="{{ it.swap }}" aria-label="Sustitución inteligente"><i class="ph ph-arrows-left-right" style="font-size:18px"></i></button>
+          </sc-if>
+        </div>
+      </sc-for>
+    </div>
+  </sc-for>
+  <div style="font-size:12px;color:var(--color-neutral-500);display:flex;gap:6px;align-items:center"><i class="ph ph-arrows-left-right"></i>Sustitución inteligente: cambia un alimento por otro equivalente.</div>
+</div>
+</sc-if>
+
+<!-- Scanner -->
+<sc-if value="{{ tabScan }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:12px;animation:np-in .3s ease both">
+  <div style="margin-bottom:4px"><div style="font-size:12px;color:var(--color-neutral-400)">Registra un plato con una foto</div><h3 style="margin:2px 0 0">IA Scanner</h3></div>
+  <div style="position:relative;height:300px;border-radius:var(--radius-lg);background:var(--color-surface);box-shadow:var(--shadow-sm);overflow:hidden;display:flex;align-items:center;justify-content:center">
+    <sc-if value="{{ scanHasImg }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;inset:0;background:center/cover no-repeat;background-image:url({{ scanImg }})"></div></sc-if>
+    <sc-if value="{{ scanNoImg }}" hint-placeholder-val="{{ true }}">
+      <div style="text-align:center;color:var(--color-neutral-500)"><i class="ph ph-bowl-food" style="font-size:56px"></i><div style="font-size:13px;margin-top:6px">{{ scanPlaceholder }}</div></div>
+    </sc-if>
+    <div style="position:absolute;inset:18px;pointer-events:none">
+      <div style="position:absolute;left:0;top:0;width:26px;height:26px;border-left:2px solid var(--color-accent);border-top:2px solid var(--color-accent);border-top-left-radius:8px"></div>
+      <div style="position:absolute;right:0;top:0;width:26px;height:26px;border-right:2px solid var(--color-accent);border-top:2px solid var(--color-accent);border-top-right-radius:8px"></div>
+      <div style="position:absolute;left:0;bottom:0;width:26px;height:26px;border-left:2px solid var(--color-accent);border-bottom:2px solid var(--color-accent);border-bottom-left-radius:8px"></div>
+      <div style="position:absolute;right:0;bottom:0;width:26px;height:26px;border-right:2px solid var(--color-accent);border-bottom:2px solid var(--color-accent);border-bottom-right-radius:8px"></div>
+    </div>
+    <sc-if value="{{ scanScanning }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;inset:0;background:color-mix(in srgb,var(--color-bg) 50%,transparent)">{{ scanLine }}
+        <div style="position:absolute;left:0;right:0;bottom:22px;text-align:center;font-size:15px;color:var(--color-accent-300)">Escaneando con IA…</div></div>
+    </sc-if>
+  </div>
+  <sc-if value="{{ scanIdle }}" hint-placeholder-val="{{ true }}">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <label class="btn btn-primary" style="height:50px;font-size:15px"><i class="ph ph-camera"></i>Tomar foto con la cámara<input type="file" accept="image/*" capture="environment" style="display:none" onChange="{{ onScanFile }}"></label>
+      <label class="btn btn-secondary" style="height:50px;font-size:15px"><i class="ph ph-image"></i>Subir foto desde galería<input type="file" accept="image/*" style="display:none" onChange="{{ onScanFile }}"></label>
+      <button class="btn btn-ghost" style="height:44px" onClick="{{ scanDemo }}">Probar sin foto</button>
+    </div>
+  </sc-if>
+  <sc-if value="{{ scanDone }}" hint-placeholder-val="{{ false }}">
+    <div class="card" style="padding:16px;gap:12px;animation:np-in .35s ease both">
+      <div><div class="card-kicker">Plato detectado · estimación simulada</div><div class="card-title" style="margin-top:4px">{{ dish.name }}</div></div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+        <div><div style="font-size:20px;font-weight:500">{{ dish.kcal }}</div><div style="font-size:11px;color:var(--color-neutral-400)">kcal</div></div>
+        <div><div style="font-size:20px;font-weight:500">{{ dish.p }} g</div><div style="font-size:11px;color:var(--color-neutral-400)">Proteína</div></div>
+        <div><div style="font-size:20px;font-weight:500">{{ dish.c }} g</div><div style="font-size:11px;color:var(--color-neutral-400)">Carbos</div></div>
+        <div><div style="font-size:20px;font-weight:500">{{ dish.g }} g</div><div style="font-size:11px;color:var(--color-neutral-400)">Grasas</div></div>
+      </div>
+      <div class="seg" style="display:flex">
+        <sc-for list="{{ scanMeals }}" as="o" hint-placeholder-count="4">
+          <label class="seg-opt" style="flex:1;justify-content:center;padding:11px 4px;font-size:12px"><input type="radio" name="scanmeal" checked="{{ o.on }}" onChange="{{ o.pick }}">{{ o.label }}</label>
+        </sc-for>
+      </div>
+      <button class="btn btn-primary btn-block" style="height:50px;font-size:15px" onClick="{{ addDish }}"><i class="ph ph-plus"></i>Añadir al diario de hoy</button>
+      <button class="btn btn-ghost" style="height:44px" onClick="{{ scanReset }}">Escanear otro plato</button>
+    </div>
+  </sc-if>
+</div>
+</sc-if>
+
+<!-- Compras -->
+<sc-if value="{{ tabShop }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:12px;animation:np-in .3s ease both">
+  <div style="margin-bottom:4px"><div style="font-size:12px;color:var(--color-neutral-400)">{{ shopSub }}</div><h3 style="margin:2px 0 0">Compras</h3></div>
+  <div class="seg" style="display:flex">
+    <label class="seg-opt" style="flex:1;justify-content:center;padding:11px"><input type="radio" name="shopmode" checked="{{ shopList }}" onChange="{{ setShopList }}"><i class="ph ph-list-checks"></i>Lista semanal</label>
+    <label class="seg-opt" style="flex:1;justify-content:center;padding:11px"><input type="radio" name="shopmode" checked="{{ shopFridge }}" onChange="{{ setShopFridge }}"><i class="ph ph-snowflake"></i>Modo nevera</label>
+  </div>
+  <sc-if value="{{ shopList }}" hint-placeholder-val="{{ true }}">
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <sc-for list="{{ shopGroups }}" as="grp" hint-placeholder-count="3">
+        <div class="card" style="padding:14px 16px 6px;gap:2px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline"><div class="card-kicker">{{ grp.name }}</div><div style="font-size:12px;color:var(--color-neutral-400)">{{ grp.count }}</div></div>
+          <sc-for list="{{ grp.items }}" as="s" hint-placeholder-count="3">
+            <button onClick="{{ s.toggle }}" style="all:unset;cursor:pointer;display:flex;align-items:center;gap:12px;min-height:48px;box-sizing:border-box;opacity:{{ s.opacity }};transition:opacity .2s">
+              <span style="width:20px;height:20px;border-radius:5px;flex:none;display:flex;align-items:center;justify-content:center;border:1.5px solid {{ s.ringColor }};background:{{ s.fill }};color:var(--color-bg);font-size:13px"><i class="ph ph-check" style="opacity:{{ s.checkOpacity }}"></i></span>
+              <span style="flex:1;font-size:14px;text-decoration:{{ s.deco }}">{{ s.name }}</span>
+              <span style="font-size:13px;color:var(--color-neutral-400)">{{ s.qty }}</span>
+            </button>
+          </sc-for>
+        </div>
+      </sc-for>
+    </div>
+  </sc-if>
+  <sc-if value="{{ shopFridge }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div class="card" style="padding:16px;gap:12px">
+        <div style="font-size:14px;font-weight:500">¿Qué tienes en casa?</div>
+        <div style="display:flex;gap:8px">
+          <input class="input" style="min-height:44px" placeholder="Añadir ingrediente" value="{{ fridgeText }}" onChange="{{ onFridgeText }}" onKeyDown="{{ onFridgeKey }}">
+          <button class="btn btn-primary" style="height:44px;width:48px;flex:none" onClick="{{ addFridge }}" aria-label="Añadir"><i class="ph ph-plus"></i></button>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <sc-for list="{{ fridgeChips }}" as="ch" hint-placeholder-count="8">
+            <button onClick="{{ ch.toggle }}" style="all:unset;cursor:pointer;box-sizing:border-box;font-size:13px;padding:8px 12px;border-radius:var(--radius-md);border:1px solid {{ ch.border }};color:{{ ch.color }};background:{{ ch.bg }}">{{ ch.name }}</button>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
+        <div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--color-neutral-400)">Recetas · {{ recipeCount }}</div>
+        <button class="btn btn-ghost" style="height:44px;font-size:13px" onClick="{{ toggleOnlyOk }}">{{ onlyOkLabel }}</button>
+      </div>
+      <sc-for list="{{ recipes }}" as="r" hint-placeholder-count="3">
+        <div class="card" style="padding:14px 16px;gap:6px;opacity:{{ r.opacity }}">
+          <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><div class="card-title" style="font-size:15px">{{ r.name }}</div><span class="tag {{ r.tagClass }}" style="flex:none">{{ r.tag }}</span></div>
+          <div style="font-size:12px;color:var(--color-neutral-400)">{{ r.kcal }} kcal · {{ r.p }}P · {{ r.c }}C · {{ r.g }}G</div>
+          <div style="font-size:12px;color:var(--color-neutral-500)">{{ r.missing }}</div>
+          <sc-if value="{{ r.ok }}" hint-placeholder-val="{{ false }}"><button class="btn btn-primary" style="height:44px;margin-top:6px" onClick="{{ r.add }}"><i class="ph ph-plus"></i>Añadir al diario · {{ r.mealName }}</button></sc-if>
+        </div>
+      </sc-for>
+    </div>
+  </sc-if>
+</div>
+</sc-if>
+
+<!-- Progreso -->
+<sc-if value="{{ tabTrain }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:12px;animation:np-in .3s ease both">
+  <div style="margin-bottom:4px"><div style="font-size:12px;color:var(--color-neutral-400)">{{ trainSub }}</div><h3 style="margin:2px 0 0">Entrenar</h3></div>
+  <div class="card" style="padding:16px;flex-direction:row;align-items:center;gap:14px">
+    <div style="position:relative;width:136px;height:136px;flex:none">
+      <svg viewBox="0 0 136 136" width="136" height="136" style="transform:rotate(-90deg)"><circle cx="68" cy="68" r="60" fill="none" stroke="var(--color-neutral-800)" stroke-width="10"></circle><circle cx="68" cy="68" r="60" fill="none" stroke="{{ ring0.color }}" stroke-width="10" stroke-linecap="round" stroke-dasharray="{{ ring0.len }}" stroke-dashoffset="{{ ring0.off }}" style="transition:stroke-dashoffset .6s ease"></circle><circle cx="68" cy="68" r="47" fill="none" stroke="var(--color-neutral-800)" stroke-width="10"></circle><circle cx="68" cy="68" r="47" fill="none" stroke="{{ ring1.color }}" stroke-width="10" stroke-linecap="round" stroke-dasharray="{{ ring1.len }}" stroke-dashoffset="{{ ring1.off }}" style="transition:stroke-dashoffset .6s ease"></circle><circle cx="68" cy="68" r="34" fill="none" stroke="var(--color-neutral-800)" stroke-width="10"></circle><circle cx="68" cy="68" r="34" fill="none" stroke="{{ ring2.color }}" stroke-width="10" stroke-linecap="round" stroke-dasharray="{{ ring2.len }}" stroke-dashoffset="{{ ring2.off }}" style="transition:stroke-dashoffset .6s ease"></circle></svg>
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center"><div style="font-size:17px;font-weight:500;line-height:1">{{ ringC.val }}</div><div style="font-size:10px;color:var(--color-neutral-400);margin-top:2px">{{ ringC.unit }}</div></div>
+    </div>
+    <div style="flex:1;min-width:0;display:flex;flex-direction:column">
+      <sc-for list="{{ rings }}" as="rg" hint-placeholder-count="3">
+        <button onClick="{{ rg.pick }}" style="all:unset;cursor:pointer;display:flex;align-items:center;gap:10px;min-height:44px;opacity:{{ rg.op }};transition:opacity .2s">
+          <span style="width:10px;height:10px;border-radius:50%;flex:none;background:{{ rg.color }}"></span>
+          <span style="flex:1;min-width:0"><span style="display:block;font-size:12px;color:var(--color-neutral-400)">{{ rg.name }}</span><span style="display:block;font-size:14px">{{ rg.val }} <span style="color:var(--color-neutral-400)">/ {{ rg.goal }} {{ rg.unit }}</span></span></span>
+        </button>
+      </sc-for>
+    </div>
+  </div>
+  <div class="card" style="padding:16px;gap:10px">
+    <div class="card-kicker">Rutina</div>
+    <div class="seg" style="display:flex"><sc-for list="{{ modeOpts }}" as="o" hint-placeholder-count="2"><label class="seg-opt" style="flex:1;justify-content:center;align-items:center;min-height:44px;box-sizing:border-box;padding:12px 4px;font-size:13px"><input type="radio" name="trainmode" checked="{{ o.on }}" onChange="{{ o.pick }}">{{ o.label }}</label></sc-for></div>
+    <div class="seg" style="display:flex"><sc-for list="{{ dayOpts }}" as="o" hint-placeholder-count="3"><label class="seg-opt" style="flex:1;justify-content:center;align-items:center;min-height:44px;box-sizing:border-box;padding:12px 4px;font-size:13px"><input type="radio" name="trainday" checked="{{ o.on }}" onChange="{{ o.pick }}">{{ o.label }}</label></sc-for></div>
+    <button class="btn btn-primary btn-block" style="height:50px;font-size:15px" onClick="{{ openBuilder }}"><i class="ph ph-magic-wand"></i>Crear / Generar rutina</button>
+    <div style="font-size:12px;color:var(--color-neutral-400);display:flex;gap:6px;align-items:center"><i class="ph ph-barbell"></i>Solo barra con discos, dos mancuernas y peso corporal</div>
+  </div>
+  <div class="card" style="padding:16px;gap:12px">
+    <div class="card-kicker">Recuperación muscular</div>
+    <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 16px">
+      <sc-for list="{{ recovery }}" as="rc" hint-placeholder-count="8">
+        <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px"><span>{{ rc.name }}</span><span style="color:var(--color-neutral-400)">{{ rc.label }}</span></div>
+          <div style="height:4px;border-radius:2px;background:var(--color-neutral-800);overflow:hidden"><div style="height:100%;width:{{ rc.w }};background:{{ rc.color }};border-radius:2px"></div></div></div>
+      </sc-for>
+    </div>
+  </div>
+  <div style="display:flex;justify-content:space-between;align-items:baseline;margin:8px 0 0"><div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--color-neutral-400)">{{ dayTitle }}</div><div style="font-size:12px;color:var(--color-neutral-400)">{{ fuel }}</div></div>
+  <div class="card" style="padding:4px 16px;gap:0">
+    <sc-for list="{{ exList }}" as="x" hint-placeholder-count="6">
+      <button onClick="{{ x.open }}" style="all:unset;cursor:pointer;display:flex;align-items:center;gap:12px;min-height:62px;box-sizing:border-box" style-active="opacity:.6">
+        <span style="width:22px;font-size:13px;color:var(--color-neutral-500)">{{ x.n }}</span>
+        <span style="flex:1;min-width:0"><span style="display:block;font-size:15px">{{ x.name }}</span><span style="display:block;font-size:12px;color:var(--color-neutral-400)">{{ x.sub }}</span></span>
+        <span style="font-size:13px;color:{{ x.color }}">{{ x.prog }}</span>
+        <i class="ph ph-caret-right" style="color:var(--color-neutral-500)"></i>
+      </button>
+    </sc-for>
+  </div>
+  <sc-if value="{{ canFinish }}" hint-placeholder-val="{{ false }}">
+    <button class="btn btn-primary btn-block" style="height:50px;font-size:16px" onClick="{{ finish }}"><i class="ph ph-flag-checkered"></i>Finalizar sesión</button>
+  </sc-if>
+  <sc-if value="{{ hasHistory }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--color-neutral-400);margin:8px 0 0">Historial</div>
+      <div class="card" style="padding:4px 16px;gap:0">
+        <sc-for list="{{ historyRows }}" as="hr" hint-placeholder-count="2">
+          <div style="display:flex;align-items:center;gap:12px;min-height:52px"><span style="width:52px;font-size:12px;color:var(--color-neutral-400)">{{ hr.date }}</span><span style="flex:1;font-size:14px">{{ hr.name }}</span><span style="font-size:12px;color:var(--color-neutral-300)">{{ hr.info }}</span></div>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ tabProg }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:12px;animation:np-in .3s ease both">
+  <div style="margin-bottom:4px"><div style="font-size:12px;color:var(--color-neutral-400)">{{ weightDelta }}</div><h3 style="margin:2px 0 0">Progreso físico</h3></div>
+  <div class="card" style="padding:16px;gap:10px">
+    <div style="display:flex;justify-content:space-between;align-items:baseline">
+      <div><span style="font-size:28px;font-weight:500">{{ selW.w }}</span> <span style="font-size:13px;color:var(--color-neutral-400)">kg</span></div>
+      <div style="font-size:13px;color:var(--color-neutral-400)">{{ selW.d }}</div>
+    </div>
+    <div style="position:relative;height:130px;margin:6px 10px 0">
+      <svg viewBox="0 0 100 100" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%;overflow:visible">
+        <polygon points="{{ chartArea }}" fill="var(--color-accent-900)" opacity=".7"></polygon>
+        <polyline points="{{ chartLine }}" fill="none" stroke="var(--color-accent)" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"></polyline>
+      </svg>
+      <sc-for list="{{ chartPts }}" as="pt" hint-placeholder-count="7">
+        <button onClick="{{ pt.pick }}" aria-label="{{ pt.d }}" style="all:unset;cursor:pointer;position:absolute;left:{{ pt.x }};top:{{ pt.y }};width:44px;height:44px;margin:-22px;display:flex;align-items:center;justify-content:center">
+          <span style="width:{{ pt.size }};height:{{ pt.size }};border-radius:50%;background:{{ pt.bg }};border:2px solid var(--color-accent);box-sizing:border-box;transition:all .2s"></span>
+        </button>
+      </sc-for>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--color-neutral-500);margin:0 2px"><span>{{ chartFirst }}</span><span>{{ chartLast }}</span></div>
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <input class="input" type="number" step="0.1" inputmode="decimal" style="min-height:44px" placeholder="Peso de hoy (kg)" value="{{ newWeight }}" onChange="{{ onNewWeight }}">
+      <button class="btn btn-primary" style="height:44px;flex:none" onClick="{{ addWeight }}">Registrar</button>
+    </div>
+  </div>
+  <div class="card" style="padding:14px 16px 6px;gap:0">
+    <div class="card-kicker" style="margin-bottom:4px">Medidas (cm)</div>
+    <sc-for list="{{ measures }}" as="ms" hint-placeholder-count="4">
+      <div style="display:flex;align-items:center;min-height:50px;gap:8px">
+        <div style="flex:1;font-size:14px">{{ ms.name }}</div>
+        <div style="font-size:12px;color:var(--color-accent-300);width:52px;text-align:right">{{ ms.delta }}</div>
+        <button class="btn btn-secondary btn-icon" style="width:44px;height:40px" onClick="{{ ms.minus }}" aria-label="Menos"><i class="ph ph-minus"></i></button>
+        <div style="width:48px;text-align:center;font-size:15px;font-weight:500">{{ ms.val }}</div>
+        <button class="btn btn-secondary btn-icon" style="width:44px;height:40px" onClick="{{ ms.plus }}" aria-label="Más"><i class="ph ph-plus"></i></button>
+      </div>
+    </sc-for>
+  </div>
+  <div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--color-neutral-400);margin:8px 0 0">Fotos de progreso</div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+    <sc-for list="{{ photos }}" as="ph" hint-placeholder-count="3">
+      <label style="cursor:pointer;display:flex;flex-direction:column;gap:6px">
+        <div style="position:relative;aspect-ratio:3/4;border-radius:var(--radius-md);background:var(--color-surface);box-shadow:var(--shadow-sm);overflow:hidden;display:flex;align-items:center;justify-content:center;color:var(--color-neutral-500)">
+          <sc-if value="{{ ph.has }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;inset:0;background:center/cover no-repeat;background-image:url({{ ph.src }})"></div></sc-if>
+          <sc-if value="{{ ph.empty }}" hint-placeholder-val="{{ true }}"><i class="ph ph-camera-plus" style="font-size:26px"></i></sc-if>
+        </div>
+        <div style="font-size:12px;color:var(--color-neutral-300)">{{ ph.label }}</div>
+        <input type="file" accept="image/*" capture="environment" style="display:none" onChange="{{ ph.onFile }}">
+      </label>
+    </sc-for>
+  </div>
+</div>
+</sc-if>
+</div>
+
+<!-- Tab bar -->
+<div style="flex:none;display:grid;grid-template-columns:repeat(6,1fr);padding:6px max(4px,calc(50% - 300px)) calc(env(safe-area-inset-bottom) + 6px);background:var(--color-surface);box-shadow:0 -1px 0 var(--color-neutral-800)">
+  <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="5">
+    <button onClick="{{ t.go }}" style="all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;height:50px;color:{{ t.color }};transition:color .2s" style-active="opacity:.6">
+      <span style="display:flex;align-items:center;justify-content:center;width:{{ t.w }};height:28px;border-radius:14px;border:1px solid {{ t.border }}"><i class="ph {{ t.icon }}" style="font-size:21px"></i></span>
+      <span style="font-size:10.5px">{{ t.label }}</span>
+    </button>
+  </sc-for>
+</div>
+
+<sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}">
+  <div style="position:absolute;left:max(18px,calc(50% - 300px));right:max(18px,calc(50% - 300px));bottom:calc(env(safe-area-inset-bottom) + 144px);z-index:5;padding:12px 14px;border-radius:var(--radius-md);background:var(--color-accent-800);color:var(--color-accent-100);font-size:13px;box-shadow:var(--shadow-md);display:flex;gap:8px;align-items:center;animation:np-in .25s ease both"><i class="ph ph-check-circle" style="font-size:18px"></i>{{ toast }}</div>
+</sc-if>
+
+<!-- Sheet: sustitución -->
+<sc-if value="{{ builderOpen }}" hint-placeholder-val="{{ false }}">
+  <div class="np-scroll" style="position:absolute;inset:0;background:var(--color-bg);overflow:auto;padding:calc(env(safe-area-inset-top) + 14px) max(16px,calc(50% - 300px)) calc(env(safe-area-inset-bottom) + 28px);animation:np-sheet .3s ease both">
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <button class="btn btn-secondary btn-icon" style="width:44px;height:44px;flex:none" onClick="{{ closeBuilder }}" aria-label="Volver"><i class="ph ph-arrow-left" style="font-size:18px"></i></button>
+        <div style="flex:1;min-width:0"><div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent)">Barra · mancuernas · peso corporal</div><div style="font-size:19px;font-weight:500;line-height:1.2">Crear / Generar rutina</div></div>
+      </div>
+      <div class="seg" style="display:flex">
+        <label class="seg-opt" style="flex:1;justify-content:center;align-items:center;min-height:44px;box-sizing:border-box;padding:12px 4px;font-size:13px"><input type="radio" name="bmode" checked="{{ bGen }}" onChange="{{ setGen }}"><i class="ph ph-magic-wand"></i>Generador</label>
+        <label class="seg-opt" style="flex:1;justify-content:center;align-items:center;min-height:44px;box-sizing:border-box;padding:12px 4px;font-size:13px"><input type="radio" name="bmode" checked="{{ bMan }}" onChange="{{ setMan }}"><i class="ph ph-list-plus"></i>Constructor</label>
+      </div>
+      <sc-if value="{{ bGen }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--color-neutral-400);margin:8px 0 0">Enfoque</div>
+          <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px">
+            <sc-for list="{{ focusOpts }}" as="f" hint-placeholder-count="4">
+              <button onClick="{{ f.pick }}" style="all:unset;cursor:pointer;box-sizing:border-box;min-height:68px;padding:10px 12px;border-radius:var(--radius-md);border:1px solid {{ f.border }};background:{{ f.bg }};display:flex;flex-direction:column;justify-content:center;gap:3px"><span style="font-size:14px;font-weight:500;color:{{ f.color }}">{{ f.label }}</span><span style="font-size:11px;color:var(--color-neutral-400)">{{ f.sub }}</span></button>
+            </sc-for>
+          </div>
+          <div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--color-neutral-400);margin:8px 0 0">Grupos musculares</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            <sc-for list="{{ groupOpts }}" as="g" hint-placeholder-count="6">
+              <button onClick="{{ g.pick }}" style="all:unset;cursor:pointer;box-sizing:border-box;min-height:44px;display:flex;align-items:center;font-size:13px;padding:0 14px;border-radius:var(--radius-md);border:1px solid {{ g.border }};color:{{ g.color }};background:{{ g.bg }}">{{ g.label }}</button>
+            </sc-for>
+          </div>
+          <div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--color-neutral-400);margin:8px 0 0">Duración disponible</div>
+          <div class="seg" style="display:flex"><sc-for list="{{ durOpts }}" as="o" hint-placeholder-count="4"><label class="seg-opt" style="flex:1;justify-content:center;align-items:center;min-height:44px;box-sizing:border-box;padding:12px 4px;font-size:13px"><input type="radio" name="bdur" checked="{{ o.on }}" onChange="{{ o.pick }}">{{ o.label }}</label></sc-for></div>
+          <div style="font-size:12px;color:var(--color-neutral-400)">{{ genNote }}</div>
+          <button class="btn btn-primary btn-block" style="height:50px;font-size:16px" onClick="{{ generate }}"><i class="ph ph-magic-wand"></i>Generar rutina</button>
+        </div>
+      </sc-if>
+      <sc-if value="{{ bMan }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div class="card" style="padding:14px 16px;gap:4px">
+            <div class="card-kicker">{{ draftName }}</div>
+            <div style="font-size:12px;color:var(--color-neutral-400)">{{ draftInfo }}</div>
+            <sc-for list="{{ draftRows }}" as="d" hint-placeholder-count="3">
+              <div style="display:flex;flex-direction:column;gap:6px;padding:10px 0 4px;box-shadow:inset 0 2px 0 -1px {{ d.mark }}">
+                <div style="font-size:14px">{{ d.n }}. {{ d.name }} <span style="color:var(--color-neutral-500)">· {{ d.sub }}</span></div>
+                <div style="display:flex;align-items:center;gap:6px">
+                  <button class="btn btn-secondary btn-icon" style="width:44px;height:44px" onClick="{{ d.minus }}" aria-label="Menos series"><i class="ph ph-minus"></i></button>
+                  <div style="width:64px;text-align:center;font-size:14px">{{ d.sets }} <span style="font-size:11px;color:var(--color-neutral-400)">series</span></div>
+                  <button class="btn btn-secondary btn-icon" style="width:44px;height:44px" onClick="{{ d.plus }}" aria-label="Más series"><i class="ph ph-plus"></i></button>
+                  <div style="flex:1"></div>
+                  <button class="btn btn-ghost" style="height:44px;font-size:13px;color:{{ d.repColor }}" onClick="{{ d.replace }}"><i class="ph ph-arrows-left-right"></i>Sustituir</button>
+                  <button class="btn btn-ghost btn-icon" style="width:44px;height:44px" onClick="{{ d.remove }}" aria-label="Quitar"><i class="ph ph-trash"></i></button>
+                </div>
+              </div>
+            </sc-for>
+            <button class="btn btn-ghost" style="height:44px;font-size:13px;margin-top:4px" onClick="{{ loadCurrent }}"><i class="ph ph-copy"></i>Partir de la rutina actual</button>
+          </div>
+          <div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--color-neutral-400);margin:8px 0 0">{{ catTitle }}</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            <sc-for list="{{ catOpts }}" as="g" hint-placeholder-count="6">
+              <button onClick="{{ g.pick }}" style="all:unset;cursor:pointer;box-sizing:border-box;min-height:44px;display:flex;align-items:center;font-size:13px;padding:0 14px;border-radius:var(--radius-md);border:1px solid {{ g.border }};color:{{ g.color }};background:{{ g.bg }}">{{ g.label }}</button>
+            </sc-for>
+          </div>
+          <div class="card" style="padding:4px 8px 4px 16px;gap:0">
+            <sc-for list="{{ catRows }}" as="c" hint-placeholder-count="4">
+              <div style="display:flex;align-items:center;gap:4px;min-height:58px;opacity:{{ c.op }}">
+                <div style="flex:1;min-width:0"><div style="font-size:14px">{{ c.name }}</div><div style="font-size:12px;color:var(--color-neutral-400)">{{ c.sub }}</div></div>
+                <button class="btn btn-ghost btn-icon" style="width:44px;height:44px" onClick="{{ c.info }}" aria-label="Ver ejecución"><i class="ph ph-play-circle" style="font-size:20px"></i></button>
+                <button class="btn btn-secondary btn-icon" style="width:44px;height:44px" onClick="{{ c.add }}" aria-label="Añadir"><i class="ph {{ c.icon }}" style="font-size:18px"></i></button>
+              </div>
+            </sc-for>
+          </div>
+          <button class="btn btn-primary btn-block" style="height:50px;font-size:16px" disabled="{{ cantSave }}" onClick="{{ saveRoutine }}">Guardar y usar rutina</button>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ exIsOpen }}" hint-placeholder-val="{{ false }}">
+  <div class="np-scroll" style="position:absolute;inset:0;background:var(--color-bg);overflow:auto;padding:calc(env(safe-area-inset-top) + 14px) max(16px,calc(50% - 300px)) 170px;animation:np-sheet .3s ease both">
+    <div style="display:flex;flex-direction:column;gap:12px">
+    <div style="display:flex;align-items:center;gap:10px">
+      <button class="btn btn-secondary btn-icon" style="width:44px;height:44px;flex:none" onClick="{{ closeEx }}" aria-label="Volver"><i class="ph ph-arrow-left" style="font-size:18px"></i></button>
+      <div style="flex:1;min-width:0"><div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent)">{{ ex.m }} · {{ ex.eq }}</div><div style="font-size:19px;font-weight:500;line-height:1.2;text-wrap:pretty">{{ ex.name }}</div></div>
+    </div>
+    <div class="card" style="padding:12px 12px 14px;gap:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center"><div class="card-kicker">Ejecución</div><span class="tag tag-neutral">Esquema lateral</span></div>
+      {{ exAnim }}
+      <div style="font-size:12px;color:var(--color-neutral-400);text-align:center">{{ ex.tempoTxt }}</div>
+    </div>
+    <div class="card" style="padding:16px;flex-direction:row;align-items:center;gap:16px">
+      <svg viewBox="0 0 200 172" style="width:150px;flex:none">
+        <circle cx="50" cy="14" r="9" fill="var(--color-neutral-800)"></circle><rect x="34" y="26" width="32" height="58" rx="10" fill="var(--color-neutral-800)"></rect><rect x="19" y="29" width="11" height="56" rx="5.5" fill="var(--color-neutral-800)"></rect><rect x="70" y="29" width="11" height="56" rx="5.5" fill="var(--color-neutral-800)"></rect><rect x="35" y="80" width="14" height="84" rx="7" fill="var(--color-neutral-800)"></rect><rect x="51" y="80" width="14" height="84" rx="7" fill="var(--color-neutral-800)"></rect>
+        <circle cx="27" cy="35" r="7" fill="{{ mm.hombros }}"></circle><circle cx="73" cy="35" r="7" fill="{{ mm.hombros }}"></circle>
+        <ellipse cx="42" cy="44" rx="7.5" ry="7" fill="{{ mm.pecho }}"></ellipse><ellipse cx="58" cy="44" rx="7.5" ry="7" fill="{{ mm.pecho }}"></ellipse><rect x="43" y="54" width="14" height="24" rx="4" fill="{{ mm.core }}"></rect>
+        <ellipse cx="24.500" cy="56" rx="4.500" ry="9" fill="{{ mm.biceps }}"></ellipse><ellipse cx="75.500" cy="56" rx="4.500" ry="9" fill="{{ mm.biceps }}"></ellipse>
+        <ellipse cx="42" cy="108" rx="6" ry="18" fill="{{ mm.cuads }}"></ellipse><ellipse cx="58" cy="108" rx="6" ry="18" fill="{{ mm.cuads }}"></ellipse>
+        <circle cx="150" cy="14" r="9" fill="var(--color-neutral-800)"></circle><rect x="134" y="26" width="32" height="58" rx="10" fill="var(--color-neutral-800)"></rect><rect x="119" y="29" width="11" height="56" rx="5.5" fill="var(--color-neutral-800)"></rect><rect x="170" y="29" width="11" height="56" rx="5.5" fill="var(--color-neutral-800)"></rect><rect x="135" y="80" width="14" height="84" rx="7" fill="var(--color-neutral-800)"></rect><rect x="151" y="80" width="14" height="84" rx="7" fill="var(--color-neutral-800)"></rect>
+        <circle cx="127" cy="35" r="7" fill="{{ mm.hombros }}"></circle><circle cx="173" cy="35" r="7" fill="{{ mm.hombros }}"></circle>
+        <rect x="137" y="30" width="26" height="36" rx="8" fill="{{ mm.espalda }}"></rect>
+        <ellipse cx="124.500" cy="56" rx="4.500" ry="9" fill="{{ mm.triceps }}"></ellipse><ellipse cx="175.500" cy="56" rx="4.500" ry="9" fill="{{ mm.triceps }}"></ellipse>
+        <ellipse cx="142.500" cy="84" rx="7" ry="8" fill="{{ mm.gluteos }}"></ellipse><ellipse cx="157.500" cy="84" rx="7" ry="8" fill="{{ mm.gluteos }}"></ellipse>
+        <ellipse cx="142" cy="110" rx="6" ry="14" fill="{{ mm.isquios }}"></ellipse><ellipse cx="158" cy="110" rx="6" ry="14" fill="{{ mm.isquios }}"></ellipse>
+        <ellipse cx="142" cy="142" rx="5" ry="11" fill="{{ mm.pantorrillas }}"></ellipse><ellipse cx="158" cy="142" rx="5" ry="11" fill="{{ mm.pantorrillas }}"></ellipse>
+      </svg>
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:10px">
+        <div><div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--color-neutral-400)"><span style="width:10px;height:10px;border-radius:50%;background:var(--color-accent-400)"></span>Agonistas</div><div style="font-size:14px;margin-top:2px">{{ ex.pri }}</div></div>
+        <div><div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--color-neutral-400)"><span style="width:10px;height:10px;border-radius:50%;background:var(--color-accent-700)"></span>Sinergistas</div><div style="font-size:14px;margin-top:2px">{{ ex.sec }}</div></div>
+      </div>
+    </div>
+    <div class="card" style="padding:16px;gap:14px">
+      <div class="card-kicker">Ficha técnica</div>
+      <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
+        <div><div style="font-size:19px;font-weight:500">{{ ex.setsTxt }}</div><div style="font-size:11px;color:var(--color-neutral-400)">Series</div></div>
+        <div><div style="font-size:19px;font-weight:500">{{ ex.repsTxt }}</div><div style="font-size:11px;color:var(--color-neutral-400)">{{ ex.repsLabel }}</div></div>
+        <div><div style="font-size:19px;font-weight:500">{{ ex.tempo }}</div><div style="font-size:11px;color:var(--color-neutral-400)">Tempo</div></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <sc-for list="{{ ex.cues }}" as="cu" hint-placeholder-count="3">
+          <div style="display:flex;gap:10px;font-size:14px;line-height:1.4"><i class="ph ph-check" style="font-size:16px;color:var(--color-accent);margin-top:2px"></i><span style="text-wrap:pretty">{{ cu.t }}</span></div>
+        </sc-for>
+        <div style="display:flex;gap:10px;font-size:14px;line-height:1.4;color:var(--color-neutral-300)"><i class="ph ph-warning" style="font-size:16px;color:var(--color-neutral-300);margin-top:2px"></i><span style="text-wrap:pretty">Evita: {{ ex.err }}</span></div>
+      </div>
+      <button class="btn btn-secondary" style="min-height:48px;height:auto;padding:8px 12px;font-size:13px;text-align:left;justify-content:flex-start" onClick="{{ swapVariant }}"><i class="ph ph-arrows-left-right" style="font-size:18px"></i><span>Cambiar variante: {{ ex.altName }}</span></button>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin:8px 0 0"><div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--color-neutral-400)">Sobrecarga progresiva</div><div style="font-size:12px;color:var(--color-neutral-400)">Descanso</div></div>
+    <div class="seg" style="display:flex"><sc-for list="{{ restOpts }}" as="o" hint-placeholder-count="3"><label class="seg-opt" style="flex:1;justify-content:center;align-items:center;min-height:44px;box-sizing:border-box;padding:12px 4px;font-size:13px"><input type="radio" name="restsec" checked="{{ o.on }}" onChange="{{ o.pick }}">{{ o.label }}</label></sc-for></div>
+    <sc-for list="{{ exSets }}" as="st" hint-placeholder-count="4">
+      <div style="padding:12px;border-radius:var(--radius-md);background:var(--color-surface);box-shadow:inset 0 0 0 1px {{ st.border }};display:flex;flex-direction:column;gap:10px;transition:box-shadow .2s">
+        <div style="display:flex;align-items:center;gap:10px;min-height:24px"><div style="font-size:14px;font-weight:500">Serie {{ st.n }}</div><div style="flex:1;font-size:12px;color:var(--color-neutral-400)">{{ st.prev }}</div><sc-if value="{{ st.isPR }}" hint-placeholder-val="{{ false }}"><span class="tag tag-accent"><i class="ph ph-trophy"></i> PR</span></sc-if></div>
+        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px">
+          <sc-if value="{{ st.notIso }}" hint-placeholder-val="{{ true }}"><div style="display:flex;align-items:center;background:var(--color-bg);border-radius:var(--radius-md)"><button onClick="{{ st.wMinus }}" aria-label="Menos peso" style="all:unset;cursor:pointer;width:44px;height:48px;display:flex;align-items:center;justify-content:center;color:var(--color-neutral-300)" style-active="color:var(--color-accent)"><i class="ph ph-minus"></i></button><div style="flex:1;text-align:center;min-width:0"><div style="font-size:17px;font-weight:500;line-height:1.1">{{ st.w }}</div><div style="font-size:10px;color:var(--color-neutral-400)">{{ ex.unit }}</div></div><button onClick="{{ st.wPlus }}" aria-label="Más peso" style="all:unset;cursor:pointer;width:44px;height:48px;display:flex;align-items:center;justify-content:center;color:var(--color-neutral-300)" style-active="color:var(--color-accent)"><i class="ph ph-plus"></i></button></div></sc-if>
+          <div style="display:flex;align-items:center;background:var(--color-bg);border-radius:var(--radius-md)"><button onClick="{{ st.rMinus }}" aria-label="Menos repeticiones" style="all:unset;cursor:pointer;width:44px;height:48px;display:flex;align-items:center;justify-content:center;color:var(--color-neutral-300)" style-active="color:var(--color-accent)"><i class="ph ph-minus"></i></button><div style="flex:1;text-align:center;min-width:0"><div style="font-size:17px;font-weight:500;line-height:1.1">{{ st.reps }}</div><div style="font-size:10px;color:var(--color-neutral-400)">{{ st.rUnit }}</div></div><button onClick="{{ st.rPlus }}" aria-label="Más repeticiones" style="all:unset;cursor:pointer;width:44px;height:48px;display:flex;align-items:center;justify-content:center;color:var(--color-neutral-300)" style-active="color:var(--color-accent)"><i class="ph ph-plus"></i></button></div>
+          <sc-if value="{{ st.notIso }}" hint-placeholder-val="{{ true }}"><div style="display:flex;align-items:center;background:var(--color-bg);border-radius:var(--radius-md)"><button onClick="{{ st.iMinus }}" aria-label="Menos RIR" style="all:unset;cursor:pointer;width:44px;height:48px;display:flex;align-items:center;justify-content:center;color:var(--color-neutral-300)" style-active="color:var(--color-accent)"><i class="ph ph-minus"></i></button><div style="flex:1;text-align:center;min-width:0"><div style="font-size:17px;font-weight:500;line-height:1.1">{{ st.rir }}</div><div style="font-size:10px;color:var(--color-neutral-400)">RIR</div></div><button onClick="{{ st.iPlus }}" aria-label="Más RIR" style="all:unset;cursor:pointer;width:44px;height:48px;display:flex;align-items:center;justify-content:center;color:var(--color-neutral-300)" style-active="color:var(--color-accent)"><i class="ph ph-plus"></i></button></div></sc-if>
+          <sc-if value="{{ st.iso }}" hint-placeholder-val="{{ false }}"><button onClick="{{ st.hold }}" style="all:unset;cursor:pointer;box-sizing:border-box;height:48px;border-radius:var(--radius-md);border:1px solid var(--color-accent);background:{{ st.holdBg }};color:var(--color-accent-200);display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;font-weight:500"><i class="ph ph-timer" style="font-size:18px"></i>{{ st.holdLabel }}</button></sc-if>
+          <button onClick="{{ st.check }}" style="all:unset;cursor:pointer;box-sizing:border-box;height:48px;border-radius:var(--radius-md);border:1px solid var(--color-accent);background:{{ st.fill }};color:{{ st.ink }};display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px;font-weight:500;transition:all .2s"><i class="ph ph-check" style="font-size:18px"></i>{{ st.checkLabel }}</button>
+        </div>
+      </div>
+    </sc-for>
+    <sc-if value="{{ canAddSet }}" hint-placeholder-val="{{ true }}"><button class="btn btn-ghost" style="height:44px;flex:none" onClick="{{ addSet }}"><i class="ph ph-plus"></i>Añadir serie</button></sc-if>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ showRest }}" hint-placeholder-val="{{ false }}">
+  <div style="position:absolute;left:max(14px,calc(50% - 300px));right:max(14px,calc(50% - 300px));bottom:calc(env(safe-area-inset-bottom) + 76px);padding:8px 8px 10px 14px;border-radius:var(--radius-lg);background:{{ restBg }};box-shadow:var(--shadow-lg),inset 0 0 0 1px var(--color-accent-600);display:flex;align-items:center;gap:10px;overflow:hidden;transition:background .3s">
+    <i class="ph ph-timer" style="font-size:24px;color:var(--color-accent-200)"></i>
+    <div style="flex:1;min-width:0"><div style="font-size:24px;font-weight:500;line-height:1.1">{{ restClock }}</div><div style="font-size:11px;color:var(--color-accent-100)">{{ restLabel }}</div></div>
+    <sc-if value="{{ restOn }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;gap:6px"><button class="btn btn-secondary" style="height:44px;font-size:13px" onClick="{{ restAdd }}">+15 s</button><button class="btn btn-ghost" style="height:44px;font-size:13px" onClick="{{ restSkip }}">Omitir</button></div>
+    </sc-if>
+    <div style="position:absolute;left:0;bottom:0;height:3px;width:{{ restPct }};background:var(--color-accent-300);transition:width .5s linear"></div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ hasSummary }}" hint-placeholder-val="{{ false }}">
+  <div style="position:absolute;inset:0;background:color-mix(in srgb,var(--color-bg) 78%,transparent);display:flex;align-items:flex-end;justify-content:center">
+    <div style="width:100%;max-width:600px;box-sizing:border-box;background:var(--color-surface);border-radius:var(--radius-lg) var(--radius-lg) 0 0;box-shadow:var(--shadow-md);padding:20px 18px calc(env(safe-area-inset-bottom) + 20px);animation:np-sheet .3s ease both;display:flex;flex-direction:column;gap:16px">
+      <div><div class="card-kicker">Sesión completada</div><div style="font-size:20px;font-weight:500;margin-top:4px">{{ summary.name }}</div></div>
+      <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
+        <div><div style="font-size:22px;font-weight:500">{{ summary.tonnage }}</div><div style="font-size:11px;color:var(--color-neutral-400)">kg de tonelaje</div></div>
+        <div><div style="font-size:22px;font-weight:500">{{ summary.eff }}<span style="font-size:13px;color:var(--color-neutral-400)"> / {{ summary.sets }}</span></div><div style="font-size:11px;color:var(--color-neutral-400)">series efectivas</div></div>
+        <div><div style="font-size:22px;font-weight:500">{{ summary.kcal }}</div><div style="font-size:11px;color:var(--color-neutral-400)">kcal quemadas</div></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div class="card-kicker">Récords personales</div>
+        <sc-for list="{{ summary.prs }}" as="p" hint-placeholder-count="1">
+          <div style="display:flex;gap:10px;align-items:center;font-size:14px"><i class="ph ph-trophy" style="font-size:18px;color:var(--color-accent)"></i><span style="flex:1;min-width:0">{{ p.name }}</span><span style="color:var(--color-accent-300)">{{ p.txt }}</span></div>
+        </sc-for>
+        <sc-if value="{{ summary.noPrs }}" hint-placeholder-val="{{ false }}"><div style="font-size:13px;color:var(--color-neutral-400)">Sin récords en esta sesión.</div></sc-if>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div class="card-kicker">Ajuste nutricional de hoy</div>
+        <div style="display:flex;justify-content:space-between;font-size:14px"><span style="color:var(--color-neutral-400)">Objetivo calórico</span><span style="color:var(--color-accent-300)">{{ summary.addKcal }}</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:14px"><span style="color:var(--color-neutral-400)">Carbohidratos post-entreno</span><span style="color:var(--color-accent-300)">{{ summary.addC }}</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:14px"><span style="color:var(--color-neutral-400)">Hidratación</span><span style="color:var(--color-accent-300)">{{ summary.addW }}</span></div>
+      </div>
+      <button class="btn btn-primary btn-block" style="height:50px;font-size:16px" onClick="{{ closeSummary }}">Ver resumen diario</button>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ swapOpen }}" hint-placeholder-val="{{ false }}">
+  <div style="position:absolute;inset:0;background:color-mix(in srgb,var(--color-bg) 70%,transparent);display:flex;align-items:flex-end" onClick="{{ closeSwap }}">
+    <div onClick="{{ stop }}" style="width:100%;background:var(--color-surface);border-radius:var(--radius-lg) var(--radius-lg) 0 0;box-shadow:var(--shadow-md);padding:18px 18px 40px;animation:np-sheet .3s ease both">
+      <div class="card-kicker">Sustitución inteligente</div>
+      <div style="font-size:18px;font-weight:500;margin:4px 0 2px">Cambiar {{ swapFrom.name }}</div>
+      <div style="font-size:13px;color:var(--color-neutral-400);margin-bottom:10px">{{ swapFrom.qty }} · {{ swapFrom.kcal }} kcal · {{ swapFrom.p }}P · {{ swapFrom.c }}C · {{ swapFrom.g }}G</div>
+      <sc-for list="{{ swapOptions }}" as="o" hint-placeholder-count="3">
+        <button onClick="{{ o.pick }}" style="all:unset;cursor:pointer;display:flex;align-items:center;gap:12px;min-height:58px;width:100%;box-sizing:border-box" style-active="opacity:.6">
+          <div style="flex:1"><div style="font-size:15px">{{ o.name }} <span style="color:var(--color-neutral-500)">{{ o.qty }}</span></div><div style="font-size:12px;color:var(--color-neutral-400)">{{ o.kcal }} kcal · {{ o.p }}P · {{ o.c }}C · {{ o.g }}G</div></div>
+          <i class="ph ph-arrow-right" style="color:var(--color-accent);font-size:18px"></i>
+        </button>
+      </sc-for>
+    </div>
+  </div>
+</sc-if>
+
+<!-- Sheet: perfil -->
+<sc-if value="{{ profileOpen }}" hint-placeholder-val="{{ false }}">
+  <div class="np-scroll" style="position:absolute;inset:0;background:var(--color-bg);overflow:auto;padding:calc(env(safe-area-inset-top) + 18px) max(18px,calc(50% - 300px)) calc(env(safe-area-inset-bottom) + 28px);animation:np-sheet .35s ease both">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:14px">
+      <div><div style="font-size:12px;color:var(--color-neutral-400)">Los cálculos se actualizan al escribir</div><h3 style="margin:2px 0 0">Tu perfil</h3></div>
+      <button class="btn btn-secondary btn-icon" style="width:44px;height:44px" onClick="{{ closeProfile }}" aria-label="Cerrar"><i class="ph ph-x" style="font-size:18px"></i></button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+        <div class="field"><label>Peso (kg)</label><input class="input" type="number" inputmode="decimal" style="min-height:44px" value="{{ profile.weight }}" onChange="{{ setWeight }}"></div>
+        <div class="field"><label>Altura (cm)</label><input class="input" type="number" inputmode="numeric" style="min-height:44px" value="{{ profile.height }}" onChange="{{ setHeight }}"></div>
+        <div class="field"><label>Edad</label><input class="input" type="number" inputmode="numeric" style="min-height:44px" value="{{ profile.age }}" onChange="{{ setAge }}"></div>
+      </div>
+      <div class="field"><label>Sexo</label>
+        <div class="seg" style="display:flex"><sc-for list="{{ sexOpts }}" as="o" hint-placeholder-count="2"><label class="seg-opt" style="flex:1;justify-content:center;padding:12px 4px"><input type="radio" name="sex" checked="{{ o.on }}" onChange="{{ o.pick }}">{{ o.label }}</label></sc-for></div></div>
+      <div class="field"><label>Actividad física · {{ actHint }}</label>
+        <div class="seg" style="display:flex"><sc-for list="{{ actOpts }}" as="o" hint-placeholder-count="4"><label class="seg-opt" style="flex:1;justify-content:center;padding:12px 2px;font-size:12px"><input type="radio" name="act" checked="{{ o.on }}" onChange="{{ o.pick }}">{{ o.label }}</label></sc-for></div></div>
+      <div class="field"><label>Objetivo</label>
+        <div class="seg" style="display:flex"><sc-for list="{{ goalOpts }}" as="o" hint-placeholder-count="3"><label class="seg-opt" style="flex:1;justify-content:center;padding:12px 2px;font-size:12.5px"><input type="radio" name="goal" checked="{{ o.on }}" onChange="{{ o.pick }}">{{ o.label }}</label></sc-for></div></div>
+      <div class="card elev-sm" style="padding:16px;gap:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center"><div class="card-kicker">Resultado</div><span class="tag tag-neutral">{{ modeTag }}</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:14px"><span style="color:var(--color-neutral-400)">Mantenimiento</span><span>{{ calc.tdee }} kcal</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:14px"><span style="color:var(--color-neutral-400)">Ajuste por objetivo</span><span style="color:var(--color-accent-300)">{{ calc.adjLabel }}</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:14px">Objetivo diario</span><span style="font-size:26px;font-weight:500">{{ target.kcal }} <span style="font-size:13px;color:var(--color-neutral-400)">kcal</span></span></div>
+        <div style="display:flex;height:6px;border-radius:3px;overflow:hidden;gap:2px">
+          <div style="width:{{ split.p }};background:var(--color-accent-300);transition:width .4s"></div><div style="width:{{ split.c }};background:var(--color-accent-500);transition:width .4s"></div><div style="width:{{ split.g }};background:var(--color-neutral-500);transition:width .4s"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+          <div><div style="font-size:19px;font-weight:500">{{ target.p }} g</div><div style="font-size:11px;color:var(--color-neutral-400)">Proteínas</div></div>
+          <div><div style="font-size:19px;font-weight:500">{{ target.c }} g</div><div style="font-size:11px;color:var(--color-neutral-400)">Carbohidratos</div></div>
+          <div><div style="font-size:19px;font-weight:500">{{ target.g }} g</div><div style="font-size:11px;color:var(--color-neutral-400)">Grasas</div></div>
+        </div>
+      </div>
+      <div class="card" style="padding:16px;gap:12px">
+        <button onClick="{{ toggleManual }}" role="switch" aria-checked="{{ manualOn }}" style="all:unset;cursor:pointer;display:flex;align-items:center;gap:12px;min-height:44px">
+          <div style="flex:1"><div style="font-size:14px;font-weight:500">Modo manual / Edición avanzada</div><div style="font-size:12px;color:var(--color-neutral-400)">Fija tus propias calorías y macros</div></div>
+          <span style="width:44px;height:26px;border-radius:13px;flex:none;box-sizing:border-box;border:1px solid {{ swBorder }};background:{{ swBg }};position:relative;transition:all .2s"><span style="position:absolute;top:3px;left:{{ swLeft }};width:18px;height:18px;border-radius:50%;background:{{ swKnob }};transition:all .2s"></span></span>
+        </button>
+        <sc-if value="{{ manualOn }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:10px;animation:np-in .25s ease both">
+            <div class="field"><label>Calorías objetivo (kcal)</label><input class="input" type="number" inputmode="numeric" style="min-height:44px" value="{{ manual.kcal }}" onChange="{{ setMKcal }}"></div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+              <div class="field"><label>Proteínas (g)</label><input class="input" type="number" inputmode="numeric" style="min-height:44px" value="{{ manual.p }}" onChange="{{ setMP }}"></div>
+              <div class="field"><label>Carbos (g)</label><input class="input" type="number" inputmode="numeric" style="min-height:44px" value="{{ manual.c }}" onChange="{{ setMC }}"></div>
+              <div class="field"><label>Grasas (g)</label><input class="input" type="number" inputmode="numeric" style="min-height:44px" value="{{ manual.g }}" onChange="{{ setMG }}"></div>
+            </div>
+            <div style="font-size:12px;color:var(--color-neutral-400)">{{ macroSumLabel }}</div>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-secondary" style="height:44px;flex:1;font-size:13px" onClick="{{ matchKcal }}">Igualar kcal a macros</button>
+              <button class="btn btn-secondary" style="height:44px;flex:1;font-size:13px" onClick="{{ resetManual }}">Usar fórmula</button>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+      <button class="btn btn-primary btn-block" style="height:50px;font-size:16px" onClick="{{ closeProfile }}">Guardar y ver mi plan</button>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px"><div style="font-size:12px;color:var(--color-neutral-500);display:flex;gap:6px;align-items:center"><i class="ph ph-floppy-disk"></i>Guardado en este dispositivo</div><button class="btn btn-ghost" style="height:44px;font-size:13px" onClick="{{ resetAll }}">Borrar datos</button></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><button class="btn btn-secondary" style="height:44px;font-size:13px" onClick="{{ exportData }}"><i class="ph ph-download-simple"></i>Exportar JSON</button><label class="btn btn-secondary" style="height:44px;font-size:13px"><i class="ph ph-upload-simple"></i>Importar JSON<input type="file" accept="application/json,.json" style="display:none" onChange="{{ importData }}"></label></div>
+    </div>
+  </div>
+</sc-if>
+</sc-if>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;skipOnboarding&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;},&quot;glassMl&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[200,250,330,500],&quot;default&quot;:250,&quot;tsType&quot;:&quot;number&quot;}}">
+const FOODS = {
+  avena:{n:'Avena',q:80,kcal:300,p:10,c:52,g:6,cat:'carb',store:'super'},
+  whey:{n:'Proteína whey',q:30,kcal:120,p:24,c:3,g:1,cat:'prot',store:'super'},
+  platano:{n:'Plátano',q:120,kcal:105,p:1,c:27,g:0,cat:'fruta',store:'verd'},
+  pollo:{n:'Pechuga de pollo',q:180,kcal:297,p:56,c:0,g:6,cat:'prot',store:'carn'},
+  arroz:{n:'Arroz cocido',q:200,kcal:260,p:5,c:56,g:1,cat:'carb',store:'super'},
+  palta:{n:'Palta',q:100,kcal:160,p:2,c:8,g:15,cat:'grasa',store:'verd'},
+  pan:{n:'Pan integral',q:60,kcal:160,p:8,c:28,g:2,cat:'carb',store:'super'},
+  huevos:{n:'Huevos',q:100,kcal:156,p:12,c:1,g:11,cat:'prot',store:'super'},
+  yogur:{n:'Yogur griego',q:150,kcal:130,p:15,c:8,g:4,cat:'prot',store:'super'},
+  salmon:{n:'Salmón',q:150,kcal:310,p:30,c:0,g:20,cat:'prot',store:'carn'},
+  papas:{n:'Papas cocidas',q:250,kcal:215,p:5,c:49,g:0,cat:'carb',store:'verd'},
+  ensalada:{n:'Ensalada verde',q:150,kcal:40,p:2,c:8,g:0,cat:'veg',store:'verd'},
+  pavo:{n:'Pavo molido',q:180,kcal:270,p:52,c:0,g:7,cat:'prot',store:'carn'},
+  atun:{n:'Atún al agua',q:160,kcal:185,p:40,c:0,g:2,cat:'prot',store:'super'},
+  tofu:{n:'Tofu firme',q:200,kcal:290,p:32,c:6,g:17,cat:'prot',store:'super'},
+  quinoa:{n:'Quinoa cocida',q:185,kcal:220,p:8,c:39,g:4,cat:'carb',store:'super'},
+  camote:{n:'Camote',q:250,kcal:215,p:4,c:50,g:0,cat:'carb',store:'verd'},
+  fideos:{n:'Fideos cocidos',q:180,kcal:280,p:10,c:56,g:2,cat:'carb',store:'super'},
+  nueces:{n:'Nueces',q:30,kcal:195,p:5,c:4,g:19,cat:'grasa',store:'super'},
+  aceite:{n:'Aceite de oliva',q:15,kcal:135,p:0,c:0,g:15,cat:'grasa',store:'super'},
+  manzana:{n:'Manzana',q:180,kcal:95,p:0,c:25,g:0,cat:'fruta',store:'verd'},
+  arandanos:{n:'Arándanos',q:150,kcal:85,p:1,c:21,g:0,cat:'fruta',store:'verd'},
+  brocoli:{n:'Brócoli',q:150,kcal:50,p:4,c:10,g:1,cat:'veg',store:'verd'}
+};
+const MEALS = [['desayuno','Desayuno','ph-coffee'],['almuerzo','Almuerzo','ph-fork-knife'],['once','Once / Merienda','ph-cookie'],['cena','Cena','ph-moon']];
+const DISHES = [
+  {name:'Arroz con pechuga y palta',kcal:580,p:48,c:60,g:14},
+  {name:'Tostadas con huevo revuelto',kcal:410,p:22,c:38,g:18},
+  {name:'Fideos con salsa boloñesa',kcal:640,p:34,c:78,g:20}
+];
+const RECIPES = [
+  {name:'Bowl de pollo, arroz y palta',ing:['pollo','arroz','palta'],kcal:580,p:48,c:60,g:14},
+  {name:'Avena proteica con plátano',ing:['avena','whey','platano'],kcal:525,p:35,c:82,g:7},
+  {name:'Tostadas con huevo y palta',ing:['pan','huevos','palta'],kcal:476,p:22,c:37,g:28},
+  {name:'Salmón con papas y brócoli',ing:['salmon','papas','brocoli'],kcal:575,p:39,c:59,g:21},
+  {name:'Quinoa con atún y ensalada',ing:['quinoa','atun','ensalada'],kcal:445,p:50,c:47,g:6},
+  {name:'Yogur con arándanos y nueces',ing:['yogur','arandanos','nueces'],kcal:410,p:21,c:33,g:23}
+];
+const ACT = {baja:[1.2,'Baja','sedentario'],ligera:[1.375,'Ligera','1–3 días/sem'],moderada:[1.55,'Moderada','3–5 días/sem'],alta:[1.725,'Alta','6–7 días/sem']};
+const GOALS = {hipertrofia:[300,'Hipertrofia'],mantener:[0,'Mantener'],definicion:[-400,'Definición']};
+const STORES = [['super','Supermercado'],['verd','Verdulería'],['carn','Carnicería']];
+let uid = 100;
+const KEY = 'nutriplan.v1';
+const SAVE = ['profile','manual','plan','water','bought','fridge','fridgeExtra','weights','selW','measures','photos','bodyPhoto','scanMeal','dishIdx','train'];
+const todayKey = () => new Date().toDateString();
+const RECIPE_MEAL = ['almuerzo','desayuno','once','cena','almuerzo','once'];
+function loadSaved() {
+  try {
+    const d = JSON.parse(localStorage.getItem(KEY)); if (!d || !d.plan) return {};
+    const out = {}; SAVE.forEach(k => { if (d[k] !== undefined) out[k] = d[k]; });
+    if (d.screen === 'app') out.screen = 'app';
+    if (d.day !== todayKey()) { out.water = 0; MEALS.forEach(([k]) => { out.plan[k] = out.plan[k].filter(x => !x.custom).map(x => ({...x, logged: false})); }); }
+    MEALS.forEach(([k]) => out.plan[k].forEach(x => { uid = Math.max(uid, x.id); }));
+    return out;
+  } catch (e) { return {}; }
+}
+
+const ST = [100,30,100,48,100,90,100,115,100,138,113,138], FL = [38,128,56,130,104,132,128,108,142,138,152,138], HG = [60,56,70,64,112,80,106,108,110,138,123,138];
+const ANIM = {
+  fpress:{t:FL.concat([57,108,58,86]),b:FL.concat([67,133,64,110])},
+  skull:{t:FL.concat([55,108,56,86]),b:FL.concat([54,108,36,114])},
+  ohp:{t:ST.concat([106,32,104,10]),b:ST.concat([111,66,108,46])},
+  lat:{t:ST.concat([120,54,140,50]),b:ST.concat([102,70,104,92])},
+  pushup:{at:'back',t:[46,92,60,98,108,112,134,120,160,130,164,138,62,118,62,138],b:[44,118,58,124,108,128,134,131,160,134,164,138,76,114,62,138]},
+  row:{t:HG.concat([90,70,82,86]),b:HG.concat([71,86,72,108])},
+  rfly:{t:HG.concat([66,66,58,60]),b:HG.concat([71,86,72,106])},
+  shrug:{t:[100,25,100,42,100,90,100,115,100,138,113,138,101,64,102,85],b:ST.concat([101,70,102,92])},
+  curl:{t:ST.concat([101,70,113,52]),b:ST.concat([101,70,104,92])},
+  squat:{at:'sh',t:ST.concat([108,60,104,48]),b:[96,64,92,80,80,112,114,112,104,138,117,138,100,92,96,80]},
+  rdl:{t:ST.concat([101,70,103,92]),b:[62,60,72,68,112,86,106,112,108,138,121,138,73,90,76,114]},
+  lunge:{t:[100,30,100,48,100,90,110,114,120,138,133,138,100,70,100,92],b:[100,48,100,66,100,108,124,112,122,138,135,138,100,88,100,110],l2:[[92,116,74,134],[86,132,64,128]]},
+  thrust:{at:'hip',box:[30,104,36,37],t:[46,96,60,100,100,100,130,100,132,138,145,138,80,98,98,96],b:[46,92,60,100,100,124,128,102,132,138,145,138,80,112,98,118]},
+  plank:{at:'back',t:[44,104,58,110,108,116,134,122,160,130,164,138,60,138,78,138],b:[44,105,58,111,108,119,134,124,160,130,164,138,60,138,78,138]},
+  splank:{t:[46,92,58,100,106,116,132,125,160,134,166,138,60,138,76,138],b:[46,94,58,102,106,127,132,131,160,134,166,138,60,138,76,138]},
+  legraise:{t:[38,130,56,132,104,134,108,104,112,76,120,72,80,136,100,137],b:[38,130,56,132,104,134,132,131,160,128,166,122,80,136,100,137]},
+  crunch:{t:[50,106,64,114,104,132,128,108,142,138,152,138,74,104,82,110],b:[38,128,56,130,104,132,128,108,142,138,152,138,62,118,70,122]},
+  calf:{t:[100,23,100,41,100,83,100,108,100,131,113,138,100,63,100,85],b:ST.concat([100,70,100,92])}
+};
+const EX = {
+  banca:{m:'Pecho',pri:['pecho'],sec:['triceps','hombros'],sets:4,tempo:'3-1-1-0',anim:'fpress',v:[['Press de suelo con barra','bar',40],['Press de suelo con barra con pausa','bar',35]],cues:['Escápulas juntas y hundidas durante toda la serie','Codos a unos 45° del torso','Baja hasta que los tríceps toquen el suelo, sin rebotar'],err:'abrir los codos a 90° y cargar el hombro'},
+  pressDb:{m:'Pecho',pri:['pecho'],sec:['hombros','triceps'],sets:3,tempo:'3-1-1-0',anim:'fpress',v:[['Press de suelo con mancuernas','db',16],['Press de suelo con mancuernas agarre neutro','db',16]],cues:['Muñecas apiladas sobre los codos','Junta las mancuernas arriba sin chocarlas','Bajada de 3 segundos con control'],err:'perder la retracción escapular al empujar'},
+  militar:{m:'Hombros',pri:['hombros'],sec:['triceps'],sets:4,tempo:'3-1-1-0',anim:'ohp',v:[['Press militar de pie con barra','bar',30],['Press militar de pie con mancuernas','db',12]],cues:['Glúteos y abdomen apretados para no arquear la zona lumbar','La barra sube en línea recta, pegada a la cara','Termina con la cabeza entre los brazos'],err:'inclinar el torso atrás hasta convertirlo en un press inclinado'},
+  laterales:{m:'Hombro lateral',pri:['hombros'],sec:[],sets:3,tempo:'2-0-1-1',anim:'lat',v:[['Elevaciones laterales con mancuernas','db',8],['Elevación lateral inclinada a una mano','db',6]],cues:['Codos apenas flexionados y fijos','Sube hasta la altura del hombro, no más','Dirige el movimiento con los codos, no con las manos'],err:'balancear el torso para subir el peso'},
+  frances:{m:'Tríceps',pri:['triceps'],sec:[],sets:3,tempo:'3-1-1-0',anim:'skull',v:[['Press francés con barra','bar',20],['Press francés con mancuernas','db',8]],cues:['Codos apuntando al techo, quietos','Baja el peso hacia detrás de la frente','Extiende por completo sin bloquear de golpe'],err:'abrir los codos y convertirlo en un press'},
+  flexiones:{m:'Pecho',pri:['pecho'],sec:['triceps','hombros'],sets:3,tempo:'3-1-1-0',anim:'pushup',v:[['Flexiones lastradas con disco','disc',10],['Flexiones con déficit sobre mancuernas','disc',10]],cues:['Cuerpo en línea de cabeza a talones','Disco apoyado sobre las escápulas, no en la zona lumbar','Pecho a un puño del suelo en cada repetición'],err:'dejar caer la cadera'},
+  remo:{m:'Espalda',pri:['espalda'],sec:['biceps'],sets:4,tempo:'2-0-1-1',anim:'row',v:[['Remo Pendlay con barra','bar',40],['Remo Yates con barra','bar',45]],cues:['Espalda neutra y torso casi paralelo al suelo','Lleva la barra al abdomen bajo','Codos hacia atrás, pegados al cuerpo'],err:'levantar el torso para ayudarse con impulso'},
+  remoDb:{m:'Espalda',pri:['espalda'],sec:['biceps'],sets:3,tempo:'2-0-1-1',anim:'row',v:[['Remo unilateral con mancuerna apoyado','db',18],['Remo inclinado con dos mancuernas','db',14]],cues:['Mano y rodilla apoyadas en una silla firme','Tira del codo hacia la cadera','Estira por completo abajo sin rotar el torso'],err:'girar el tronco para subir la mancuerna'},
+  pajaros:{m:'Hombro posterior',pri:['hombros'],sec:['espalda'],sets:3,tempo:'2-0-1-1',anim:'rfly',v:[['Pájaros con mancuernas','db',6],['Pájaros a una mano con apoyo','db',6]],cues:['Torso inclinado y cuello largo','Abre los brazos con codos semiflexionados','Pausa de 1 segundo arriba'],err:'encoger los hombros y tirar con el trapecio'},
+  trapecio:{m:'Trapecio',pri:['espalda'],sec:[],sets:3,tempo:'2-0-1-2',anim:'shrug',v:[['Encogimientos de trapecio con barra','bar',50],['Encogimientos con mancuernas','db',20]],cues:['Brazos estirados: solo suben los hombros','Hombros hacia las orejas en línea vertical','Mantén 2 segundos arriba'],err:'rotar los hombros en círculo'},
+  curl:{m:'Bíceps',pri:['biceps'],sec:[],sets:3,tempo:'3-0-1-1',anim:'curl',v:[['Curl de bíceps con barra recta','bar',25],['Curl supino con mancuernas','db',10]],cues:['Codos pegados a los costados','Sube sin adelantar los codos','Baja en 3 segundos hasta extender el brazo'],err:'balancear la cadera para subir la barra'},
+  martillo:{m:'Bíceps y braquial',pri:['biceps'],sec:[],sets:3,tempo:'3-0-1-1',anim:'curl',v:[['Curl martillo alterno con mancuernas','db',12],['Curl martillo cruzado al pecho','db',12]],cues:['Agarre neutro, pulgares arriba','Alterna sin girar la muñeca','El brazo que espera se queda extendido'],err:'acortar el recorrido para mover más peso'},
+  sentadilla:{m:'Cuádriceps',pri:['cuads'],sec:['gluteos'],sets:4,tempo:'3-1-1-0',anim:'squat',v:[['Sentadilla trasera con barra','bar',50],['Sentadilla frontal con barra','bar',40]],cues:['Pies al ancho de hombros, puntas algo abiertas','Las rodillas siguen la línea de los pies','Baja hasta romper el paralelo con la espalda neutra'],err:'dejar que las rodillas colapsen hacia dentro'},
+  rdl:{m:'Isquiosurales',pri:['isquios'],sec:['gluteos','espalda'],sets:4,tempo:'3-1-1-0',anim:'rdl',v:[['Peso muerto rumano con barra','bar',50],['Peso muerto rumano con mancuernas','db',20]],cues:['Lleva la cadera atrás con rodillas apenas flexionadas','La barra roza los muslos todo el recorrido','Baja hasta sentir el estiramiento, sin redondear la espalda'],err:'convertirlo en sentadilla doblando las rodillas'},
+  zancadas:{m:'Cuádriceps y glúteos',pri:['cuads','gluteos'],sec:['isquios'],sets:3,tempo:'2-1-1-0',anim:'lunge',v:[['Zancadas caminando con mancuernas','db',14],['Zancadas estáticas con mancuernas','db',14]],cues:['Paso largo y torso erguido','La rodilla trasera baja casi hasta el suelo','Empuja con el talón de la pierna delantera'],err:'dar un paso corto que carga la rodilla delantera'},
+  bulgara:{m:'Cuádriceps y glúteos',pri:['cuads','gluteos'],sec:['isquios'],sets:3,tempo:'3-1-1-0',anim:'lunge',v:[['Sentadilla búlgara con mancuernas','db',12],['Sentadilla búlgara con barra','bar',30]],cues:['Empeine trasero apoyado en una silla o sofá','Baja en vertical, sin irte hacia delante','Peso en el medio pie delantero'],err:'empujar con la pierna de atrás'},
+  thrust:{m:'Glúteos',pri:['gluteos'],sec:['isquios'],sets:4,tempo:'2-0-1-2',anim:'thrust',v:[['Hip thrust con barra','bar',60],['Puente de glúteo con barra','bar',60]],cues:['Espalda alta apoyada en el borde del sofá','Mentón recogido y costillas abajo','Bloquea arriba con las tibias verticales'],err:'arquear la zona lumbar en lugar de extender la cadera'},
+  plancha:{m:'Core',iso:true,pri:['core'],sec:['hombros'],sets:3,tempo:'2-0-2-0',anim:'plank',v:[['Plancha abdominal','bw',0],['Plancha con disco en la espalda','disc',10]],cues:['Codos bajo los hombros y antebrazos paralelos','Glúteos y abdomen apretados, pelvis recogida','Línea recta de cabeza a talones mientras respiras'],err:'hundir la zona lumbar cuando llega la fatiga'},
+  planchaLat:{m:'Oblicuos',iso:true,pri:['core'],sec:['hombros','gluteos'],sets:3,tempo:'2-0-2-0',anim:'splank',v:[['Plancha lateral','bw',0],['Plancha lateral con rodillas apoyadas','bw',0]],cues:['Codo justo bajo el hombro','Cadera alta, alineada con hombros y tobillos','Cambia de lado al terminar el tiempo'],err:'dejar caer la cadera hacia el suelo'},
+  pushup:{m:'Pecho',pri:['pecho'],sec:['triceps','hombros','core'],sets:3,tempo:'3-1-1-0',anim:'pushup',v:[['Flexiones de pecho','bw',0],['Flexiones declinadas con pies elevados','bw',0]],cues:['Manos algo más abiertas que los hombros','Codos a 45° del torso','Pecho a un puño del suelo y extensión completa arriba'],err:'adelantar la cabeza y acortar el recorrido'},
+  elevPiernas:{m:'Abdomen inferior',pri:['core'],sec:[],sets:3,tempo:'3-0-1-1',anim:'legraise',v:[['Elevaciones de piernas en suelo','bw',0],['Elevaciones de rodillas en suelo','bw',0]],cues:['Zona lumbar pegada al suelo todo el recorrido','Sube las piernas juntas hasta la vertical','Baja en 3 segundos sin apoyar los talones'],err:'arquear la zona lumbar al bajar'},
+  crunch:{m:'Abdomen',pri:['core'],sec:[],sets:3,tempo:'2-1-1-1',anim:'crunch',v:[['Crunch abdominal sosteniendo disco','disc',10],['Crunch abdominal','bw',0]],cues:['Disco pegado al pecho con ambos brazos','Despega solo las escápulas, enrollando el tronco','Exhala arriba y baja con control'],err:'tirar del cuello o impulsarse con la cadera'},
+  gemelos:{m:'Pantorrillas',pri:['pantorrillas'],sec:[],sets:3,tempo:'2-1-1-2',anim:'calf',v:[['Elevación de talones de pie con mancuernas','db',18],['Elevación de talones a una pierna','db',14]],cues:['Sube todo lo que puedas sobre la punta','Pausa de 2 segundos arriba','Baja lento hasta estirar el talón'],err:'rebotar abajo usando el tendón'}
+};
+const DAYS = {
+  push:['Empuje',['banca','pressDb','militar','laterales','frances','flexiones']],
+  pull:['Tirón',['remo','remoDb','pajaros','trapecio','curl','martillo']],
+  legs:['Pierna',['sentadilla','rdl','zancadas','bulgara','thrust','gemelos']],
+  upper:['Torso',['banca','remo','militar','remoDb','curl','frances']],
+  lower:['Pierna',['sentadilla','rdl','bulgara','thrust','zancadas','gemelos']]
+};
+const MODES = {ppl:['PPL',['push','pull','legs']], ul:['Torso / Pierna',['upper','lower']], custom:['Mi rutina',['custom']]};
+const MN = {pecho:'Pecho',espalda:'Espalda',hombros:'Hombros',biceps:'Bíceps',triceps:'Tríceps',cuads:'Cuádriceps',isquios:'Isquiosurales',gluteos:'Glúteos',pantorrillas:'Pantorrillas',core:'Core'};
+const EQ = {bar:'Barra',db:'Mancuernas',disc:'Disco',bw:'Peso corporal'};
+const kg = n => String(Math.round(n * 10) / 10).replace('.', ',');
+const nf = n => Math.round(n).toLocaleString('es-CL');
+const e1 = (w, reps) => w * (1 + reps / 30);
+const exV = (tr, id) => EX[id].v[tr.variant[id] || 0];
+const exKey = (tr, id) => id + ':' + (tr.variant[id] || 0);
+const GEN = {pecho:['banca','pressDb','pushup','flexiones'],espalda:['remo','remoDb','trapecio','pajaros'],hombros:['militar','laterales','pajaros'],brazos:['curl','frances','martillo'],piernas:['sentadilla','rdl','bulgara','thrust','zancadas','gemelos'],core:['plancha','crunch','elevPiernas','planchaLat','pushup']};
+const CATS = {...GEN, core:['plancha','planchaLat','pushup','flexiones','elevPiernas','crunch']};
+const GL = {pecho:'Pecho',espalda:'Espalda',hombros:'Hombros',brazos:'Brazos',piernas:'Piernas',core:'Abdomen / Core'};
+const FOCUS = {
+  hip:{name:'Hipertrofia máxima',sub:'4 series · 8–12 reps · 120 s',sets:4,reps:10,range:'8–12',rest:120},
+  fuerza:{name:'Fuerza / Volumen',sub:'4 series · 5–8 reps · 150 s',sets:4,reps:6,range:'5–8',rest:150},
+  express:{name:'Sesión Express',sub:'30 min · 3 series · 90 s',sets:3,reps:10,range:'8–12',rest:90},
+  core:{name:'Core y definición',sub:'3 series · 10–15 reps · 90 s',sets:3,reps:12,range:'10–15',rest:90}
+};
+const cus = tr => tr.day === 'custom' && tr.custom ? tr.custom : null;
+const dayIds = tr => cus(tr) ? tr.custom.items.map(x => x.id) : (DAYS[tr.day] || DAYS.push)[1];
+const dayName = tr => cus(tr) ? tr.custom.name : (DAYS[tr.day] || DAYS.push)[0];
+const waterExtra = k => k > 0 ? Math.max(250, Math.round(k * 2 / 50) * 50) : 0;
+const score = (e, x) => e.iso ? x.secs : x.w > 0 ? e1(x.w, x.reps) : x.reps / 1000;
+const baseScore = (e, v) => e.iso ? 45 : v[2] > 0 ? e1(v[2], 10) : .01;
+const fmtSet = (e, x) => e.iso ? x.secs + ' s' : x.w > 0 ? kg(x.w) + ' kg × ' + x.reps : x.reps + ' reps';
+const prevOf = (tr, id, i) => { const L = tr.last[exKey(tr, id)]; if (L && L.length) return L[Math.min(i, L.length - 1)]; const c = cus(tr); return EX[id].iso ? {secs: 45} : {w: exV(tr, id)[2], reps: c ? c.reps : 10}; };
+const setsOf = (tr, id) => { if (tr.sets[exKey(tr, id)]) return tr.sets[exKey(tr, id)]; const c = cus(tr), it = c ? c.items.find(x => x.id === id) : null;
+  return Array.from({length: it ? it.sets : EX[id].sets}, (_, i) => { const p = prevOf(tr, id, i); return EX[id].iso ? {secs: p.secs, done: false} : {w: p.w, reps: p.reps, rir: 2, done: false}; }); };
+function totals(tr) {
+  let tonnage = 0, n = 0, eff = 0;
+  Object.keys(tr.sets).forEach(key => { const a = key.split(':'), m = EX[a[0]].v[+a[1]][1] === 'db' ? 2 : 1;
+    tr.sets[key].forEach(x => { if (x.done) { tonnage += (x.w || 0) * (x.reps || 0) * m; n++; if (x.secs || x.rir <= 2) eff++; } }); });
+  return {tonnage, n, eff, kcal: Math.round(n * 8 + tonnage * .012)};
+}
+function buildAnim(e, eqKind, key) {
+  const A = ANIM[e.anim], h = React.createElement, tp = e.tempo.split('-').map(Number), tot = tp[0] + tp[1] + tp[2] + tp[3];
+  const kt = [0, tp[0] / tot, (tp[0] + tp[1]) / tot, (tp[0] + tp[1] + tp[2]) / tot, 1].join(';');
+  const an = (attr, a, b) => h('animate', {key: attr, attributeName: attr, values: [a, b, b, a, a].join(';'), keyTimes: kt, dur: tot + 's', repeatCount: 'indefinite'});
+  const pts = (p, idx) => idx.map(i => p[i] + ',' + p[i + 1]).join(' ');
+  const at = p => A.at === 'sh' ? [p[2] - 5, p[3] - 1] : A.at === 'hip' ? [p[4], p[5] - 9] : A.at === 'back' ? [(p[2] + p[4]) / 2 - 8, (p[3] + p[5]) / 2 - 11] : [p[14], p[15]];
+  const ln = {fill: 'none', strokeLinecap: 'round', strokeLinejoin: 'round'};
+  const et = at(A.t), eb = at(A.b), big = eqKind !== 'db', kids = [];
+  kids.push(h('line', {key: 'fl', x1: 14, y1: 142, x2: 186, y2: 142, stroke: 'var(--color-neutral-700)', strokeWidth: 1.5}));
+  if (A.box) kids.push(h('rect', {key: 'bx', x: A.box[0], y: A.box[1], width: A.box[2], height: A.box[3], rx: 4, fill: 'var(--color-neutral-800)'}));
+  if (eqKind !== 'bw') kids.push(h('line', {key: 'tj', x1: et[0], y1: et[1], x2: eb[0], y2: eb[1], stroke: 'var(--color-accent-600)', strokeWidth: 1.5, strokeDasharray: '3 4'}));
+  if (A.l2) { const l2 = i => A[i ? 'b' : 't'][4] + ',' + A[i ? 'b' : 't'][5] + ' ' + A.l2[i][0] + ',' + A.l2[i][1] + ' ' + A.l2[i][2] + ',' + A.l2[i][3];
+    kids.push(h('polyline', {key: 'l2', points: l2(0), stroke: 'var(--color-neutral-500)', strokeWidth: 5, ...ln}, an('points', l2(0), l2(1)))); }
+  kids.push(h('polyline', {key: 'bd', points: pts(A.t, [2, 4, 6, 8, 10]), stroke: 'var(--color-neutral-200)', strokeWidth: 5.5, ...ln}, an('points', pts(A.t, [2, 4, 6, 8, 10]), pts(A.b, [2, 4, 6, 8, 10]))));
+  kids.push(h('circle', {key: 'hd', cx: A.t[0], cy: A.t[1], r: 8, fill: 'var(--color-neutral-200)'}, an('cx', A.t[0], A.b[0]), an('cy', A.t[1], A.b[1])));
+  kids.push(h('polyline', {key: 'ar', points: pts(A.t, [2, 12, 14]), stroke: 'var(--color-neutral-400)', strokeWidth: 4.5, ...ln}, an('points', pts(A.t, [2, 12, 14]), pts(A.b, [2, 12, 14]))));
+  if (eqKind !== 'bw') kids.push(h('circle', {key: 'eq', cx: et[0], cy: et[1], r: big ? 9 : 6, fill: big ? 'var(--color-accent-900)' : 'var(--color-accent)', stroke: 'var(--color-accent)', strokeWidth: big ? 3 : 0}, an('cx', et[0], eb[0]), an('cy', et[1], eb[1])));
+  return h('svg', {key, viewBox: '0 0 200 150', style: {width: '100%', height: 200, display: 'block'}}, kids);
+}
+
+class Component extends DCLogic {
+  state = {
+    screen: this.props.skipOnboarding ? 'app' : 'welcome', tab: 'home', scale: 1,
+    bodyPhoto: null, bodyScanning: false, profileOpen: false,
+    profile: {weight: 72, height: 178, age: 24, sex: 'h', act: 'moderada', goal: 'hipertrofia'},
+    plan: {
+      desayuno: [{id:1,food:'avena',mult:1,logged:true},{id:2,food:'whey',mult:1,logged:true},{id:3,food:'platano',mult:1,logged:true}],
+      almuerzo: [{id:4,food:'pollo',mult:1,logged:false},{id:5,food:'arroz',mult:1,logged:false},{id:6,food:'palta',mult:1,logged:false}],
+      once: [{id:7,food:'pan',mult:1,logged:false},{id:8,food:'huevos',mult:1,logged:false},{id:9,food:'yogur',mult:1,logged:false}],
+      cena: [{id:10,food:'salmon',mult:1,logged:false},{id:11,food:'papas',mult:1,logged:false},{id:12,food:'ensalada',mult:1,logged:false}]
+    },
+    water: 750, swap: null, toast: '',
+    scan: 'idle', scanImg: null, dishIdx: 0, scanMeal: 'almuerzo',
+    shopMode: 'list', bought: {}, fridge: {pollo:1,arroz:1,huevos:1,avena:1,platano:1}, fridgeExtra: [], fridgeText: '', onlyOk: false,
+    weights: [{d:'5 oct',w:70.2},{d:'12 oct',w:70.6},{d:'19 oct',w:70.9},{d:'26 oct',w:71.1},{d:'2 nov',w:71.5},{d:'9 nov',w:71.8},{d:'16 nov',w:72.0}],
+    selW: 6, newWeight: '',
+    measures: [{name:'Pecho',val:98,base:98},{name:'Cintura',val:80,base:80},{name:'Brazo',val:35.5,base:35.5},{name:'Muslo',val:57,base:57}],
+    photos: [{label:'Inicio',src:null},{label:'Semana 4',src:null},{label:'Semana 8',src:null}],
+    manual: {on: false, kcal: '', p: '', c: '', g: ''},
+    train: {mode: 'ppl', day: 'push', rest: 120, variant: {}, sets: {}, last: {}, prs: {}, muscle: {}, history: [], today: null, custom: null},
+    builder: null, hold: null, exOpen: null, restEnd: 0, restTotal: 0, restDone: false, summary: null, ringSel: 0,
+    ...loadSaved()
+  };
+  componentDidUpdate(pp, ps) {
+    if (this.noSave || ps === this.state) return;
+    const s = this.state, d = {day: todayKey(), screen: s.screen};
+    SAVE.forEach(k => { d[k] = s[k]; });
+    try { localStorage.setItem(KEY, JSON.stringify(d)); }
+    catch (e) { try { localStorage.setItem(KEY, JSON.stringify({...d, bodyPhoto: null, photos: s.photos.map(p => ({...p, src: null}))})); } catch (e2) {} }
+  }
+  componentDidMount() {
+    
+    
+  }
+  componentWillUnmount() { clearInterval(this.ri); clearInterval(this.hi); clearTimeout(this.tt); clearTimeout(this.st); }
+  toast(msg) { this.setState({toast: msg}); clearTimeout(this.tt); this.tt = setTimeout(() => this.setState({toast: ''}), 2400); }
+  fileData(e) {
+    const f = e.target.files && e.target.files[0]; e.target.value = '';
+    if (!f) return Promise.resolve(null);
+    return new Promise(res => {
+      const img = new Image(), u = URL.createObjectURL(f);
+      img.onload = () => {
+        const k = Math.min(1, 720 / Math.max(img.width, img.height)), c = document.createElement('canvas');
+        c.width = img.width * k; c.height = img.height * k;
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(u);
+        res(c.toDataURL('image/jpeg', .72));
+      };
+      img.onerror = () => res(null); img.src = u;
+    });
+  }
+  setM(k, v) { this.setState(s => ({manual: {...s.manual, [k]: v}})); }
+  setP(k, v) { this.setState(s => ({profile: {...s.profile, [k]: v}})); }
+  startScan(img) {
+    this.setState(s => ({scan: 'scanning', scanImg: img, dishIdx: (s.dishIdx + (s.scan === 'idle' && s.scanned ? 1 : 0)) % DISHES.length}));
+    clearTimeout(this.st); this.st = setTimeout(() => this.setState({scan: 'done', scanned: true}), 2200);
+  }
+  audio() { try { const C = window.AudioContext || window.webkitAudioContext; if (!this.ac) this.ac = new C(); if (this.ac.state === 'suspended') this.ac.resume(); } catch (e) {} }
+  beep() {
+    try { const ac = this.ac; if (ac) [0, .22, .44].forEach(t => { const o = ac.createOscillator(), g = ac.createGain(), t0 = ac.currentTime + t;
+      o.frequency.value = 880; g.gain.setValueAtTime(.0001, t0); g.gain.exponentialRampToValueAtTime(.25, t0 + .02); g.gain.exponentialRampToValueAtTime(.0001, t0 + .18);
+      o.connect(g); g.connect(ac.destination); o.start(t0); o.stop(t0 + .2); }); } catch (e) {}
+    try { if (navigator.vibrate) navigator.vibrate([120, 80, 120]); } catch (e) {}
+  }
+  startRest(sec) {
+    this.audio(); clearInterval(this.ri); clearTimeout(this.rd);
+    this.setState({restEnd: Date.now() + sec * 1000, restTotal: sec, restDone: false});
+    this.ri = setInterval(() => {
+      if (!this.state.restEnd) { clearInterval(this.ri); return; }
+      if (Date.now() >= this.state.restEnd) { clearInterval(this.ri); this.setState({restEnd: 0, restDone: true}); this.beep(); this.rd = setTimeout(() => this.setState({restDone: false}), 6000); }
+      else this.forceUpdate();
+    }, 500);
+  }
+  startHold(key, id, i, secs) {
+    this.audio(); clearInterval(this.hi);
+    this.setState({hold: {key, i, end: Date.now() + secs * 1000}});
+    this.hi = setInterval(() => {
+      const hd = this.state.hold; if (!hd) { clearInterval(this.hi); return; }
+      if (Date.now() >= hd.end) {
+        clearInterval(this.hi); this.beep();
+        this.setState(st => ({hold: null, train: {...st.train, sets: {...st.train.sets, [key]: setsOf(st.train, id).map((x, j) => j === i ? {...x, done: true} : x)}}}));
+        this.startRest(this.state.train.rest);
+      } else this.forceUpdate();
+    }, 250);
+  }
+  stopHold() { clearInterval(this.hi); this.setState({hold: null}); }
+  builderVals() {
+    const s = this.state, b = s.builder, tr = s.train;
+    const setB = fn => this.setState(st => st.builder ? {builder: fn(st.builder)} : null);
+    const openBuilder = () => this.setState({builder: {mode: 'gen', focus: 'hip', groups: {}, dur: 45, cat: 'pecho', replace: null,
+      draft: tr.custom ? tr.custom.items.map(x => ({...x})) : [], meta: tr.custom ? {name: tr.custom.name, rest: tr.custom.rest, reps: tr.custom.reps, range: tr.custom.range} : null}});
+    if (!b) return {builderOpen: false, openBuilder};
+    const meta = b.meta || {name: 'Mi rutina', rest: 120, reps: 10, range: '8–12'};
+    const nSets = b.draft.reduce((a, x) => a + x.sets, 0);
+    const chip = on => ({border: on ? 'var(--color-accent)' : 'var(--color-divider)', color: on ? 'var(--color-accent-300)' : 'var(--color-neutral-300)', bg: on ? 'var(--color-accent-900)' : 'transparent'});
+    const exName = id => exV(tr, id)[0], exSub = id => EX[id].m + ' · ' + EQ[exV(tr, id)[1]] + (EX[id].iso ? ' · por tiempo' : '');
+    return {
+      builderOpen: true, openBuilder, closeBuilder: () => this.setState({builder: null}),
+      bGen: b.mode === 'gen', bMan: b.mode === 'man', setGen: () => setB(x => ({...x, mode: 'gen'})), setMan: () => setB(x => ({...x, mode: 'man'})),
+      focusOpts: Object.keys(FOCUS).map(k => ({label: FOCUS[k].name, sub: FOCUS[k].sub, ...chip(b.focus === k), pick: () => setB(x => ({...x, focus: k}))})),
+      groupOpts: Object.keys(GEN).map(k => ({label: GL[k], ...chip(!!b.groups[k]), pick: () => setB(x => ({...x, groups: {...x.groups, [k]: !x.groups[k]}}))})),
+      durOpts: [30, 45, 60, 75].map(v => ({label: v + ' min', on: (b.focus === 'express' ? 30 : b.dur) === v, pick: () => setB(x => ({...x, dur: v}))})),
+      genNote: b.focus === 'express' ? 'Sesión Express fija la duración en 30 min.' : 'Sin grupos marcados se reparte por todo el cuerpo.',
+      generate: () => setB(x => {
+        const f = FOCUS[x.focus], dur = x.focus === 'express' ? 30 : x.dur;
+        let gs = Object.keys(GEN).filter(k => x.groups[k]);
+        if (x.focus === 'core') gs = ['core'].concat(gs.filter(k => k !== 'core'));
+        if (!gs.length) gs = Object.keys(GEN);
+        const budget = Math.floor(dur * 60 / (40 + f.rest)), n = Math.max(2, Math.min(8, Math.round(budget / f.sets))), per = Math.max(2, Math.min(4, Math.floor(budget / n)));
+        const ids = [];
+        for (let round = 0; round < 6 && ids.length < n; round++) gs.forEach(g => { const id = GEN[g][round]; if (id && ids.length < n && !ids.includes(id)) ids.push(id); });
+        return {...x, mode: 'man', replace: null, draft: ids.map(id => ({id, sets: per})), meta: {name: f.name, rest: f.rest, reps: f.reps, range: f.range}};
+      }),
+      draftName: meta.name, draftInfo: b.draft.length ? b.draft.length + ' ejercicios · ' + nSets + ' series · ~' + Math.round(nSets * (40 + meta.rest) / 60) + ' min · descanso ' + meta.rest + ' s' : 'Añade ejercicios del catálogo o genera una rutina.',
+      draftRows: b.draft.map((d, i) => ({n: i + 1, name: exName(d.id), sub: exSub(d.id), sets: d.sets,
+        mark: b.replace === i ? 'var(--color-accent)' : 'var(--color-neutral-800)', repColor: b.replace === i ? 'var(--color-accent)' : 'var(--color-neutral-300)',
+        minus: () => setB(x => ({...x, draft: x.draft.map((y, j) => j === i ? {...y, sets: Math.max(1, y.sets - 1)} : y)})),
+        plus: () => setB(x => ({...x, draft: x.draft.map((y, j) => j === i ? {...y, sets: Math.min(6, y.sets + 1)} : y)})),
+        replace: () => setB(x => ({...x, replace: x.replace === i ? null : i, cat: Object.keys(CATS).find(k => CATS[k].includes(d.id)) || x.cat})),
+        remove: () => setB(x => ({...x, replace: null, draft: x.draft.filter((y, j) => j !== i)}))})),
+      loadCurrent: () => setB(x => ({...x, replace: null, draft: dayIds(tr).map(id => ({id, sets: setsOf(tr, id).length}))})),
+      catTitle: b.replace != null ? 'Elige el reemplazo del ejercicio ' + (b.replace + 1) : 'Añadir del catálogo',
+      catOpts: Object.keys(CATS).map(k => ({label: k === 'core' ? 'Core y peso corporal' : GL[k], ...chip(b.cat === k), pick: () => setB(x => ({...x, cat: k}))})),
+      catRows: CATS[b.cat].map(id => { const used = b.draft.some(d => d.id === id); return {name: exName(id), sub: exSub(id), op: used && b.replace == null ? .45 : 1,
+        icon: b.replace != null ? 'ph-arrows-left-right' : used ? 'ph-check' : 'ph-plus', info: () => this.setState({exOpen: id}),
+        add: () => setB(x => x.replace != null ? {...x, replace: null, draft: x.draft.map((y, j) => j === x.replace ? {id, sets: y.sets} : y)}
+          : x.draft.some(y => y.id === id) || x.draft.length >= 10 ? x : {...x, draft: x.draft.concat([{id, sets: EX[id].sets}])})}; }),
+      cantSave: !b.draft.length,
+      saveRoutine: () => { if (!b.draft.length) return;
+        this.setState(st => ({builder: null, train: {...st.train, custom: {name: meta.name, items: b.draft, rest: meta.rest, reps: meta.reps, range: meta.range}, mode: 'custom', day: 'custom', rest: meta.rest}}));
+        this.toast('Rutina guardada · ' + b.draft.length + ' ejercicios'); }
+    };
+  }
+  finishSession() {
+    const tr = this.state.train, T = totals(tr); if (!T.n) return;
+    const now = Date.now(), last = {...tr.last}, prs = {...tr.prs}, muscle = {...tr.muscle}, prList = [];
+    Object.keys(tr.sets).forEach(key => {
+      const a = key.split(':'), e = EX[a[0]], v = e.v[+a[1]], done = tr.sets[key].filter(x => x.done); if (!done.length) return;
+      last[key] = done.map(x => e.iso ? {secs: x.secs} : {w: x.w, reps: x.reps});
+      const best = done.reduce((p, c) => score(e, c) > score(e, p) ? c : p), base = prs[key] ?? baseScore(e, v);
+      if (score(e, best) > base) { prs[key] = score(e, best); prList.push({name: v[0], txt: fmtSet(e, best)}); }
+      e.pri.forEach(m => { muscle[m] = now; }); e.sec.forEach(m => { muscle[m] = Math.max(muscle[m] || 0, now - 864e5); });
+    });
+    const td = tr.today && tr.today.day === todayKey() ? tr.today : {tonnage: 0, eff: 0, kcal: 0, sets: 0, n: 0};
+    const today = {day: todayKey(), tonnage: td.tonnage + T.tonnage, eff: td.eff + T.eff, kcal: td.kcal + T.kcal, sets: td.sets + T.n, n: td.n + 1};
+    const name = dayName(tr);
+    const history = [{date: new Date().toISOString(), name, tonnage: Math.round(T.tonnage), sets: T.n, eff: T.eff, kcal: T.kcal, prs: prList.length}].concat(tr.history).slice(0, 60);
+    clearInterval(this.ri); clearInterval(this.hi);
+    this.setState({train: {...tr, sets: {}, last, prs, muscle, today, history}, hold: null, exOpen: null, restEnd: 0, restDone: false,
+      summary: {name, tonnage: nf(T.tonnage), eff: T.eff, sets: T.n, kcal: T.kcal, prs: prList, noPrs: !prList.length,
+        addKcal: '+' + T.kcal + ' kcal', addC: '+' + Math.round(T.kcal / 4) + ' g', addW: '+' + (waterExtra(today.kcal) - waterExtra(td.kcal)) + ' ml'}});
+  }
+  trainVals(target, eaten) {
+    const s = this.state, tr = s.train, now = Date.now(), r = Math.round;
+    const setT = fn => this.setState(st => ({train: fn(st.train)}));
+    const td = tr.today && tr.today.day === todayKey() ? tr.today : {tonnage: 0, eff: 0, kcal: 0, sets: 0, n: 0};
+    const cur = totals(tr), ids = dayIds(tr);
+    let gT = 0, gS = 0;
+    ids.forEach(id => { const n = setsOf(tr, id).length, m = exV(tr, id)[1] === 'db' ? 2 : 1; gS += n; for (let i = 0; i < n; i++) { const p = prevOf(tr, id, i); gT += (p.w || 0) * (p.reps || 0) * m; } });
+    const goals = [r(gT), gS, r(gS * 8 + gT * .012)], vals = [r(td.tonnage + cur.tonnage), td.eff + cur.eff, td.kcal + cur.kcal];
+    const rings = [['Tonelaje', 'kg', 60, 'var(--color-accent-500)'], ['Series efectivas', 'series', 47, 'var(--color-accent-300)'], ['Gasto activo', 'kcal', 34, 'var(--color-neutral-200)']].map((d, i) => {
+      const len = 2 * Math.PI * d[2];
+      return {name: d[0], unit: d[1], color: d[3], len, off: len * (1 - Math.min(1, goals[i] ? vals[i] / goals[i] : 0)), val: nf(vals[i]), goal: nf(goals[i]), op: s.ringSel === i ? 1 : .6, pick: () => this.setState({ringSel: i})};
+    });
+    const exList = ids.map((id, i) => { const e = EX[id], v = exV(tr, id), ss = setsOf(tr, id), d = ss.filter(x => x.done).length;
+      return {n: i + 1, name: v[0], sub: e.m + ' · ' + EQ[v[1]] + ' · ' + ss.length + ' × ' + (e.iso ? '30–90 s' : cus(tr) ? cus(tr).range : '8–12'), prog: d + '/' + ss.length, color: d === ss.length ? 'var(--color-accent)' : 'var(--color-neutral-300)', open: () => this.setState({exOpen: id})}; });
+    const recovery = Object.keys(MN).slice(0, 8).map(k => { const t = tr.muscle[k], p = t ? Math.min(100, (now - t) / 1728e5 * 100) : 100;
+      return {name: MN[k], label: p >= 100 ? 'Listo' : r(p) + ' %', w: p + '%', color: p >= 100 ? 'var(--color-accent)' : 'var(--color-neutral-400)'}; });
+    let ex = {}, exSets = [], mm = {}, exAnim = null, swapVariant = null, addSet = null, canAddSet = false;
+    if (s.exOpen) {
+      const id = s.exOpen, e = EX[id], vi = tr.variant[id] || 0, v = e.v[vi], key = exKey(tr, id), ss = setsOf(tr, id);
+      const stepW = v[1] === 'db' ? 2 : 2.5, basePR = tr.prs[key] ?? baseScore(e, v), tp = e.tempo.split('-');
+      const hk = s.hold && s.hold.key === key ? s.hold : null, hLeft = hk ? Math.max(0, Math.ceil((hk.end - now) / 1000)) : 0;
+      const upd = (i, fn) => setT(t => ({...t, sets: {...t.sets, [exKey(t, id)]: setsOf(t, id).map((x, j) => j === i ? fn(x) : x)}}));
+      exSets = ss.map((x, i) => { const p = prevOf(tr, id, i); return {
+        n: i + 1, w: kg(x.w || 0), reps: e.iso ? x.secs : x.reps, rir: x.rir, rUnit: e.iso ? 'segundos' : 'reps', iso: !!e.iso, notIso: !e.iso, prev: (tr.last[key] ? 'Anterior: ' : 'Referencia: ') + fmtSet(e, p),
+        holdBg: hk && hk.i === i ? 'var(--color-accent-800)' : 'transparent', holdLabel: hk && hk.i === i ? 'Detener · ' + hLeft + ' s' : 'Iniciar ' + x.secs + ' s',
+        hold: () => hk && hk.i === i ? this.stopHold() : this.startHold(key, id, i, x.secs),
+        isPR: x.done && score(e, x) > basePR, border: x.done ? 'var(--color-accent)' : 'var(--color-neutral-800)',
+        fill: x.done ? 'var(--color-accent)' : 'transparent', ink: x.done ? 'var(--color-bg)' : 'var(--color-accent-300)', checkLabel: x.done ? 'Hecha' : 'Completar',
+        wMinus: () => upd(i, y => ({...y, w: Math.max(0, y.w - stepW)})), wPlus: () => upd(i, y => ({...y, w: y.w + stepW})),
+        rMinus: () => upd(i, y => e.iso ? {...y, secs: Math.max(30, y.secs - 5)} : {...y, reps: Math.max(1, y.reps - 1)}), rPlus: () => upd(i, y => e.iso ? {...y, secs: Math.min(90, y.secs + 5)} : {...y, reps: y.reps + 1}),
+        iMinus: () => upd(i, y => ({...y, rir: Math.max(0, y.rir - 1)})), iPlus: () => upd(i, y => ({...y, rir: Math.min(5, y.rir + 1)})),
+        check: () => { if (!x.done) this.startRest(tr.rest); upd(i, y => ({...y, done: !y.done})); }
+      }; });
+      Object.keys(MN).forEach(k => { mm[k] = e.pri.includes(k) ? 'var(--color-accent-400)' : e.sec.includes(k) ? 'var(--color-accent-700)' : 'var(--color-neutral-700)'; });
+      ex = {name: v[0], m: e.m, eq: EQ[v[1]], unit: v[1] === 'db' ? 'kg c/u' : v[1] === 'bw' ? 'kg lastre' : 'kg', setsTxt: e.iso ? '3' : '3–4', repsTxt: e.iso ? '30–90 s' : cus(tr) ? cus(tr).range : '8–12', repsLabel: e.iso ? 'Aguante' : 'Repeticiones', tempo: e.iso ? 'Iso' : e.tempo, altName: e.v[1 - vi][0], err: e.err, cues: e.cues.map(t => ({t})),
+        tempoTxt: e.iso ? 'Isométrico · mantén la posición y respira' : 'Bajada ' + tp[0] + ' s' + (+tp[1] ? ' · pausa ' + tp[1] + ' s' : '') + ' · subida ' + tp[2] + ' s' + (+tp[3] ? ' · contracción ' + tp[3] + ' s' : ''),
+        pri: e.pri.map(k => MN[k]).join(', '), sec: e.sec.length ? e.sec.map(k => MN[k]).join(', ') : 'Ninguno relevante'};
+      exAnim = buildAnim(e, v[1], key);
+      swapVariant = () => setT(t => ({...t, variant: {...t.variant, [id]: 1 - (t.variant[id] || 0)}}));
+      canAddSet = ss.length < 6;
+      addSet = () => setT(t => { const a = setsOf(t, id); return a.length >= 6 ? t : {...t, sets: {...t.sets, [exKey(t, id)]: a.concat([{...a[a.length - 1], done: false}])}}; });
+    }
+    const left = Math.max(0, Math.ceil((s.restEnd - now) / 1000)), restOn = s.restEnd > 0;
+    return {
+      ...this.builderVals(), tabTrain: s.tab === 'train', goTrain: () => this.setState({tab: 'train'}),
+      trainSub: cur.n ? 'Sesión en curso · ' + cur.n + ' series registradas' : td.n ? 'Sesión de hoy completada' : 'Hipertrofia en casa',
+      rings, ring0: rings[0], ring1: rings[1], ring2: rings[2], ringC: rings[s.ringSel],
+      modeOpts: Object.keys(MODES).filter(k => k !== 'custom' || tr.custom).map(k => ({label: MODES[k][0], on: tr.mode === k, pick: () => setT(t => ({...t, mode: k, day: MODES[k][1][0]}))})),
+      dayOpts: (MODES[tr.mode] || MODES.ppl)[1].map(k => ({label: k === 'custom' ? dayName({...tr, day: 'custom'}) : DAYS[k][0], on: tr.day === k, pick: () => setT(t => ({...t, day: k}))})),
+      recovery, exList, dayTitle: dayName(tr) + ' · ' + ids.length + ' ejercicios', fuel: 'Carbos hoy: ' + eaten.c + ' / ' + target.c + ' g',
+      canFinish: cur.n > 0, finish: () => this.finishSession(),
+      hasHistory: tr.history.length > 0,
+      historyRows: tr.history.slice(0, 5).map(x => ({date: new Date(x.date).toLocaleDateString('es-CL', {day: 'numeric', month: 'short'}).replace('.', ''), name: x.name, info: nf(x.tonnage) + ' kg · ' + x.sets + ' series' + (x.prs ? ' · ' + x.prs + ' PR' : '')})),
+      exIsOpen: !!s.exOpen, closeEx: () => this.setState({exOpen: null}), ex, exSets, mm, exAnim, swapVariant, addSet, canAddSet,
+      restOpts: [90, 120, 150].map(v => ({label: v + ' s', on: tr.rest === v, pick: () => setT(t => ({...t, rest: v}))})),
+      showRest: restOn || s.restDone, restOn, restClock: restOn ? Math.floor(left / 60) + ':' + String(left % 60).padStart(2, '0') : '0:00',
+      restLabel: restOn ? 'Descanso' : 'Descanso terminado · siguiente serie', restPct: restOn ? Math.min(100, left / s.restTotal * 100) + '%' : '100%',
+      restBg: restOn ? 'var(--color-accent-900)' : 'var(--color-accent-700)',
+      restAdd: () => this.setState(st => ({restEnd: st.restEnd + 15000, restTotal: st.restTotal + 15})), restSkip: () => { clearInterval(this.ri); this.setState({restEnd: 0}); },
+      hasSummary: !!s.summary, summary: s.summary || {prs: []}, closeSummary: () => this.setState({summary: null, tab: 'home'}),
+      trainedToday: td.n > 0, trainTon: nf(td.tonnage) + ' kg', trainAdj: '+' + td.kcal + ' kcal · +' + r(td.kcal / 4) + ' g carbos · +' + waterExtra(td.kcal) + ' ml agua',
+      exportData: () => { try { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([localStorage.getItem(KEY) || '{}'], {type: 'application/json'}));
+        a.download = 'nutriplan-respaldo-' + new Date().toISOString().slice(0, 10) + '.json'; a.click(); this.toast('Respaldo exportado'); } catch (e) {} },
+      importData: e => { const f = e.target.files && e.target.files[0]; e.target.value = ''; if (!f) return;
+        f.text().then(t => { try { const d = JSON.parse(t); if (!d || !d.plan || !d.profile) throw 0; this.noSave = true; localStorage.setItem(KEY, t); location.reload(); } catch (err) { this.toast('Archivo de respaldo no válido'); } }); }
+    };
+  }
+  renderVals() {
+    const s = this.state, pr = s.profile, r = Math.round;
+    const w = +pr.weight || 0, h = +pr.height || 0, age = +pr.age || 0;
+    const bmr = 10 * w + 6.25 * h - 5 * age + (pr.sex === 'h' ? 5 : -161);
+    const tdee = r(Math.max(0, bmr) * ACT[pr.act][0]);
+    const adj = GOALS[pr.goal][0];
+    const aK = Math.max(0, tdee + adj), aP = r(w * (pr.goal === 'definicion' ? 2.2 : 2)), aG = r(w * 0.9);
+    const auto = {kcal: aK, p: aP, c: Math.max(0, r((aK - aP * 4 - aG * 9) / 4)), g: aG};
+    const mn = s.manual, pos = v => Math.max(0, r(+v || 0));
+    const tb = mn.on ? {kcal: pos(mn.kcal), p: pos(mn.p), c: pos(mn.c), g: pos(mn.g)} : auto;
+    const td0 = s.train.today && s.train.today.day === todayKey() ? s.train.today : null, burn = td0 ? td0.kcal : 0, waterGoal = 2700 + waterExtra(burn);
+    const target = {kcal: tb.kcal + burn, p: tb.p, c: tb.c + r(burn / 4), g: tb.g};
+    const kcalT = target.kcal, pT = target.p, cT = target.c, gT = target.g;
+    const macroSum = pT * 4 + cT * 4 + gT * 9;
+    const macroKcal = pT * 4 + cT * 4 + gT * 9 || 1;
+
+    let base = 0;
+    MEALS.forEach(([k]) => s.plan[k].forEach(it => { if (!it.custom) base += FOODS[it.food].kcal * it.mult; }));
+    const sc = base ? kcalT / base : 1;
+    const calcItem = it => {
+      if (it.custom) return {...it.custom, qty: ''};
+      const f = FOODS[it.food], k = it.mult * sc;
+      return {name: f.n, qty: Math.max(5, r(f.q * k / 5) * 5) + ' g', rawQty: f.q * k, kcal: r(f.kcal * k), p: r(f.p * k), c: r(f.c * k), g: r(f.g * k)};
+    };
+    const eaten = {kcal: 0, p: 0, c: 0, g: 0};
+    const upd = (mk, id, fn) => this.setState(st => ({plan: {...st.plan, [mk]: st.plan[mk].map(x => x.id === id ? fn(x) : x)}}));
+    const meals = MEALS.map(([k, name, icon]) => {
+      let ke = 0, kp = 0, done = 0;
+      const items = s.plan[k].map(it => {
+        const v = calcItem(it); kp += v.kcal;
+        if (it.logged) { ke += v.kcal; done++; eaten.kcal += v.kcal; eaten.p += v.p; eaten.c += v.c; eaten.g += v.g; }
+        return {...v, canSwap: !it.custom,
+          ringColor: it.logged ? 'var(--color-accent)' : 'var(--color-neutral-600)', fill: it.logged ? 'var(--color-accent)' : 'transparent', checkOpacity: it.logged ? 1 : 0,
+          toggle: () => upd(k, it.id, x => ({...x, logged: !x.logged})),
+          swap: () => this.setState({swap: {meal: k, id: it.id}})};
+      });
+      return {key: k, name, icon, items, kcalEaten: ke, kcalPlan: kp,
+        status: done === 0 ? 'Pendiente' : done === items.length ? 'Completado' : done + ' de ' + items.length + ' registrados',
+        open: () => this.setState({tab: 'diet'})};
+    });
+    const pct = (a, b) => Math.min(100, b ? a / b * 100 : 0) + '%';
+    const left = kcalT - eaten.kcal;
+
+    let swapFrom = {}, swapOptions = [];
+    if (s.swap) {
+      const it = s.plan[s.swap.meal].find(x => x.id === s.swap.id);
+      if (it && !it.custom) {
+        const f = FOODS[it.food]; swapFrom = calcItem(it);
+        swapOptions = Object.keys(FOODS).filter(k => k !== it.food && FOODS[k].cat === f.cat).slice(0, 4).map(k => {
+          const mult = f.kcal * it.mult / FOODS[k].kcal;
+          return {...calcItem({food: k, mult}), pick: () => { upd(s.swap.meal, it.id, x => ({...x, food: k, mult})); this.setState({swap: null}); this.toast(f.n + ' → ' + FOODS[k].n); }};
+        });
+      }
+    }
+
+    const agg = {};
+    MEALS.forEach(([k]) => s.plan[k].forEach(it => { if (!it.custom) agg[it.food] = (agg[it.food] || 0) + FOODS[it.food].q * it.mult * sc * 7; }));
+    let boughtN = 0, totalN = 0;
+    const shopGroups = STORES.map(([sk, name]) => {
+      const items = Object.keys(agg).filter(k => FOODS[k].store === sk).map(k => {
+        const on = !!s.bought[k]; totalN++; if (on) boughtN++;
+        const q = agg[k];
+        return {name: FOODS[k].n, qty: q >= 1000 ? (q / 1000).toFixed(1).replace('.', ',') + ' kg' : r(q / 10) * 10 + ' g',
+          opacity: on ? .5 : 1, deco: on ? 'line-through' : 'none', checkOpacity: on ? 1 : 0,
+          ringColor: on ? 'var(--color-accent)' : 'var(--color-neutral-600)', fill: on ? 'var(--color-accent)' : 'transparent',
+          toggle: () => this.setState(st => ({bought: {...st.bought, [k]: !st.bought[k]}}))};
+      });
+      return {name, items, count: items.filter(i => i.checkOpacity).length + ' / ' + items.length};
+    }).filter(g => g.items.length);
+
+    const chip = (name, on, toggle) => ({name, toggle, border: on ? 'var(--color-accent)' : 'var(--color-divider)', color: on ? 'var(--color-accent-300)' : 'var(--color-neutral-400)', bg: on ? 'var(--color-accent-900)' : 'transparent'});
+    const fridgeChips = Object.keys(FOODS).map(k => chip(FOODS[k].n, !!s.fridge[k], () => this.setState(st => ({fridge: {...st.fridge, [k]: !st.fridge[k]}}))))
+      .concat(s.fridgeExtra.map(n => chip(n, true, () => this.setState(st => ({fridgeExtra: st.fridgeExtra.filter(x => x !== n)})))));
+    const addFridge = () => {
+      const t = s.fridgeText.trim(); if (!t) return;
+      const k = Object.keys(FOODS).find(k => FOODS[k].n.toLowerCase().includes(t.toLowerCase()));
+      this.setState(st => k ? {fridge: {...st.fridge, [k]: true}, fridgeText: ''} : {fridgeExtra: st.fridgeExtra.includes(t) ? st.fridgeExtra : [...st.fridgeExtra, t], fridgeText: ''});
+    };
+    const allRecipes = RECIPES.map(rc => {
+      const miss = rc.ing.filter(i => !s.fridge[i]);
+      const mk = RECIPE_MEAL[RECIPES.indexOf(rc)] || 'almuerzo';
+      return {...rc, mealName: MEALS.find(m => m[0] === mk)[1].split(' ')[0],
+        add: () => { this.setState(st => ({plan: {...st.plan, [mk]: [...st.plan[mk], {id: ++uid, custom: {name: rc.name, kcal: rc.kcal, p: rc.p, c: rc.c, g: rc.g}, logged: true}]}, tab: 'home'})); this.toast(rc.name + ' añadido · ' + rc.kcal + ' kcal'); },
+        ok: !miss.length, nMiss: miss.length, opacity: miss.length ? .6 : 1, tag: miss.length ? 'Faltan ' + miss.length : 'Compatible', tagClass: miss.length ? 'tag-neutral' : 'tag-accent',
+        missing: miss.length ? 'Falta: ' + miss.map(i => FOODS[i].n.toLowerCase()).join(', ') : 'Tienes todos los ingredientes'};
+    }).sort((a, b) => a.nMiss - b.nMiss);
+    const recipes = s.onlyOk ? allRecipes.filter(x => x.ok) : allRecipes;
+
+    const ws = s.weights, min = Math.min(...ws.map(x => x.w)), max = Math.max(...ws.map(x => x.w)), span = max - min || 1;
+    const xy = ws.map((p, i) => [ws.length > 1 ? i / (ws.length - 1) * 100 : 50, 88 - (p.w - min) / span * 76]);
+    const selI = Math.min(s.selW, ws.length - 1);
+    const dW = ws[ws.length - 1].w - ws[0].w;
+    const fmt = n => n.toFixed(1).replace('.', ',');
+
+    const go = t => () => this.setState({tab: t});
+    const tabs = [['home','Inicio','ph-house'],['diet','Dieta','ph-fork-knife'],['train','Entrenar','ph-barbell'],['scan','Scanner','ph-scan'],['shop','Compras','ph-shopping-cart'],['prog','Progreso','ph-chart-line-up']]
+      .map(([k, label, icon]) => ({label, icon, go: go(k), color: s.tab === k ? 'var(--color-accent)' : 'var(--color-neutral-500)', w: k === 'scan' ? '52px' : '40px', border: k === 'scan' ? 'var(--color-accent)' : 'transparent'}));
+    const opts = (obj, cur, key, li) => Object.keys(obj).map(k => ({label: obj[k][li], on: cur === k, pick: () => this.setP(key, k)}));
+    const num = k => e => this.setP(k, e.target.value);
+
+    return {
+      ...this.trainVals(target, eaten),
+      isWelcome: s.screen === 'welcome', isPhoto: s.screen === 'photo', isAnalysis: s.screen === 'analysis', isApp: s.screen === 'app',
+      goPhoto: () => this.setState({screen: 'photo'}),
+      bodyPhoto: s.bodyPhoto, hasBodyPhoto: !!s.bodyPhoto, noBodyPhoto: !s.bodyPhoto, bodyScanning: s.bodyScanning, cantAnalyze: !s.bodyPhoto || s.bodyScanning,
+      onBodyFile: e => this.fileData(e).then(u => { if (u) this.setState(st => ({bodyPhoto: u, photos: st.photos.map((p, i) => i === 0 ? {...p, src: u} : p)})); }),
+      manual: mn, manualOn: mn.on, modeTag: mn.on ? 'Manual' : 'Automático',
+      swBorder: mn.on ? 'var(--color-accent)' : 'var(--color-neutral-600)', swBg: mn.on ? 'var(--color-accent-800)' : 'transparent', swLeft: mn.on ? '21px' : '3px', swKnob: mn.on ? 'var(--color-accent-300)' : 'var(--color-neutral-500)',
+      toggleManual: () => this.setState(st => ({manual: st.manual.on ? {...st.manual, on: false} : {on: true, ...(st.manual.kcal === '' ? auto : st.manual)}})),
+      setMKcal: e => this.setM('kcal', e.target.value), setMP: e => this.setM('p', e.target.value), setMC: e => this.setM('c', e.target.value), setMG: e => this.setM('g', e.target.value),
+      macroSumLabel: 'Tus macros suman ' + macroSum + ' kcal' + (macroSum === kcalT ? '' : ' (' + (macroSum > kcalT ? '+' : '−') + Math.abs(macroSum - kcalT) + ' respecto al objetivo)'),
+      matchKcal: () => this.setM('kcal', macroSum - r(burn / 4) * 4), resetManual: () => this.setState({manual: {on: true, ...auto}}),
+      resetAll: () => { this.noSave = true; try { localStorage.removeItem(KEY); } catch (e) {} location.reload(); },
+      analyzeBody: () => { this.setState({bodyScanning: true}); setTimeout(() => this.setState({bodyScanning: false, screen: 'analysis'}), 2400); },
+      skipPhoto: () => this.setState({screen: 'app', profileOpen: true}),
+      finishOnboarding: () => this.setState({screen: 'app', profileOpen: true}),
+      scanLine: React.createElement('div', {style: {position: 'absolute', left: '6%', right: '6%', height: 2, background: 'var(--color-accent)', boxShadow: '0 0 18px 4px var(--color-accent-600)', animation: 'np-scan 2.2s ease-in-out infinite'}}),
+      tabHome: s.tab === 'home', tabDiet: s.tab === 'diet', tabScan: s.tab === 'scan', tabShop: s.tab === 'shop', tabProg: s.tab === 'prog', tabs,
+      today: new Date().toLocaleDateString('es-CL', {weekday: 'long', day: 'numeric', month: 'long'}),
+      openProfile: () => this.setState({profileOpen: true}), closeProfile: () => this.setState({profileOpen: false}), profileOpen: s.profileOpen,
+      target, eaten, kcalLeft: Math.abs(left), kcalLeftLabel: left >= 0 ? 'kcal restantes' : 'kcal de más',
+      ringOffset: 339.3 * (1 - Math.min(1, kcalT ? eaten.kcal / kcalT : 0)), goalLabel: GOALS[pr.goal][1],
+      macroBars: [['Proteínas','p','var(--color-accent-300)'],['Carbohidratos','c','var(--color-accent-500)'],['Grasas','g','var(--color-neutral-400)']].map(([name, k, color]) => ({name, color, eaten: eaten[k], target: target[k], pct: pct(eaten[k], target[k])})),
+      waterMl: s.water, waterGoal, waterPct: pct(s.water, waterGoal), glassLabel: (this.props.glassMl ?? 250) + ' ml',
+      waterPlus: () => this.setState(st => ({water: st.water + (this.props.glassMl ?? 250)})),
+      waterMinus: () => this.setState(st => ({water: Math.max(0, st.water - (this.props.glassMl ?? 250))})),
+      meals,
+      swapOpen: !!s.swap, swapFrom, swapOptions, closeSwap: () => this.setState({swap: null}), stop: e => e.stopPropagation(),
+      scanIdle: s.scan === 'idle', scanScanning: s.scan === 'scanning', scanDone: s.scan === 'done',
+      scanImg: s.scanImg, scanHasImg: !!s.scanImg, scanNoImg: !s.scanImg, scanPlaceholder: s.scan === 'idle' ? 'Encuadra tu plato' : 'Foto de ejemplo',
+      onScanFile: e => this.fileData(e).then(u => { if (u) this.startScan(u); }),
+      scanDemo: () => this.startScan(null), scanReset: () => this.setState({scan: 'idle', scanImg: null}),
+      dish: DISHES[s.dishIdx],
+      scanMeals: MEALS.map(([k, n]) => ({label: n.split(' ')[0], on: s.scanMeal === k, pick: () => this.setState({scanMeal: k})})),
+      addDish: () => {
+        const d = DISHES[s.dishIdx];
+        this.setState(st => ({plan: {...st.plan, [st.scanMeal]: [...st.plan[st.scanMeal], {id: ++uid, custom: d, logged: true}]}, scan: 'idle', scanImg: null, tab: 'home'}));
+        this.toast(d.name + ' añadido · ' + d.kcal + ' kcal');
+      },
+      shopList: s.shopMode === 'list', shopFridge: s.shopMode === 'fridge',
+      setShopList: () => this.setState({shopMode: 'list'}), setShopFridge: () => this.setState({shopMode: 'fridge'}),
+      shopSub: s.shopMode === 'list' ? boughtN + ' de ' + totalN + ' comprados · plan de 7 días' : 'Recetas con lo que tienes en casa',
+      shopGroups, fridgeChips, fridgeText: s.fridgeText, onFridgeText: e => this.setState({fridgeText: e.target.value}),
+      onFridgeKey: e => { if (e.key === 'Enter') addFridge(); }, addFridge,
+      recipes, recipeCount: recipes.length, onlyOkLabel: s.onlyOk ? 'Ver todas' : 'Solo compatibles', toggleOnlyOk: () => this.setState(st => ({onlyOk: !st.onlyOk})),
+      weightDelta: (dW >= 0 ? '+' : '−') + fmt(Math.abs(dW)) + ' kg desde el ' + ws[0].d,
+      selW: {w: fmt(ws[selI].w), d: ws[selI].d},
+      chartLine: xy.map(p => p.join(',')).join(' '), chartArea: '0,100 ' + xy.map(p => p.join(',')).join(' ') + ' 100,100',
+      chartPts: xy.map((p, i) => ({x: p[0] + '%', y: p[1] + '%', d: ws[i].d, size: i === selI ? '14px' : '8px', bg: i === selI ? 'var(--color-accent)' : 'var(--color-surface)', pick: () => this.setState({selW: i})})),
+      chartFirst: ws[0].d, chartLast: ws[ws.length - 1].d,
+      newWeight: s.newWeight, onNewWeight: e => this.setState({newWeight: e.target.value}),
+      addWeight: () => {
+        const v = parseFloat(String(s.newWeight).replace(',', '.')); if (!v || v < 30 || v > 250) return;
+        const d = new Date().toLocaleDateString('es-CL', {day: 'numeric', month: 'short'}).replace('.', '');
+        this.setState(st => ({weights: [...st.weights, {d, w: v}], selW: st.weights.length, newWeight: '', profile: {...st.profile, weight: v}}));
+        this.toast('Peso registrado · perfil actualizado');
+      },
+      measures: s.measures.map((m, i) => {
+        const d = m.val - m.base, step = dv => () => this.setState(st => ({measures: st.measures.map((x, j) => j === i ? {...x, val: Math.max(0, x.val + dv)} : x)}));
+        return {name: m.name, val: fmt(m.val), delta: d ? (d > 0 ? '+' : '−') + fmt(Math.abs(d)) : '', minus: step(-0.5), plus: step(0.5)};
+      }),
+      photos: s.photos.map((p, i) => ({label: p.label, src: p.src, has: !!p.src, empty: !p.src,
+        onFile: e => this.fileData(e).then(u => { if (u) this.setState(st => ({photos: st.photos.map((x, j) => j === i ? {...x, src: u} : x)})); })})),
+      hasToast: !!s.toast, toast: s.toast,
+      profile: pr, setWeight: num('weight'), setHeight: num('height'), setAge: num('age'),
+      sexOpts: [{label: 'Hombre', on: pr.sex === 'h', pick: () => this.setP('sex', 'h')}, {label: 'Mujer', on: pr.sex === 'm', pick: () => this.setP('sex', 'm')}],
+      actOpts: opts(ACT, pr.act, 'act', 1), actHint: ACT[pr.act][2], goalOpts: opts(GOALS, pr.goal, 'goal', 1),
+      calc: {tdee, adjLabel: (adj > 0 ? '+' : adj < 0 ? '−' : '') + Math.abs(adj) + ' kcal'},
+      split: {p: pT * 4 / macroKcal * 100 + '%', c: cT * 4 / macroKcal * 100 + '%', g: gT * 9 / macroKcal * 100 + '%'}
+    };
+  }
+}
+</script>
+</body>
+</html>
